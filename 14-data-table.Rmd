@@ -1,12 +1,12 @@
 ---
 layout: page
-title: Intermediate R for reproducible scientific analysis
+title: 재현가능한 과학적 분석을 위한 중급 R 
 subtitle: data.table
 minutes: 20
 ---
 
 
-> ## Learning objectives {.objectives}
+> ## 학습 목표 {.objectives}
 >
 > * To know how to perform common data.frame tasks using data.table
 > * To know how to examine the structure of objects in R
