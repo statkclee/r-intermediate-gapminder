@@ -214,7 +214,7 @@ landSize[gap]
 ```
 
 To learn more about data table, you can check out the package Vignette on CRAN:
-<http://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.pdf>
+<http://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.pdf> 
 
 
 
