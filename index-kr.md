@@ -12,11 +12,10 @@ R과 이미 친숙하지만, 프로그래밍 개념을 갖추지 못한 과학�
 
 본 워크샵에서 통계학은 다루지는 않는다.
 
-> ## Prerequisites {.prereq}
+> ## 전제조건 {.prereq}
 >
-> Be familar with RStudio, project creation, and variables, and 
-> the basic data structures and types in R.
->
+> R언어에 나오는 RStudio, 프로젝트 생성, 변수, 기본 자료구조 및 자료형 
+> 개념에 친숙해야 된다.
 
 ## 선행 이수 학습
 
