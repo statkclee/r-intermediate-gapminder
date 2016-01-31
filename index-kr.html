@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 재현가능한 과학적 분석을 위한 중급 R</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <h1 class="title">재현가능한 과학적 분석을 위한 중급 R</h1>
+          <p>R과 이미 친숙하지만, 프로그래밍 개념을 갖추지 못한 과학연구원을 위한 중급 학습과정이다.</p>
+<p>본 학습과정의 목적은 이미 R을 경험한 과학연구원에게 코드를 좀더 효율적이고, 모듈방으로, 재사용가능하게 작성할 뿐만 아니라, 효율적인 자료분석을 위한 팩키지를 작성하는 방법을 전달함에 있다.</p>
+<p>다양한 제3자 팩키지가 워크샵을 통해 사용된다. 여기에서 소개되는 팩키지가 필히 가장 최고는 아니고, 포괄적인 것도 아니다. 하지만, 유용하다고 판단되는 팩키지로, 주로 사용편의성에 초점을 맞춰 선택되었다.</p>
+<p>본 워크샵에서 통계학은 다루지는 않는다.</p>
+<section class="prereq panel panel-warning">
+<div class="panel-heading">
+<h2 id="prerequisites"><span class="glyphicon glyphicon-education"></span>Prerequisites</h2>
+</div>
+<div class="panel-body">
+<p>Be familar with RStudio, project creation, and variables, and the basic data structures and types in R.</p>
+</div>
+</section>
+<h2 id="선행-이수-학습">선행 이수 학습</h2>
+<p>다음 학습주제는 <a href="https://statkclee.github.io/r-novice-gapminder/index-kr.html">R 학습</a>, <a href="http://swcarpentry.github.io/r-novice-gapminder">초급 R(영문)</a>을 통해 R 초급 지식을 전달했고, 본 워크샵에 필요한 사전 지식이 된다:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">한국어(Korean)</th>
+<th align="left">영어(English)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1. <a href="http://statkclee.github.io/r-novice-gapminder/01-rstudio-intro-kr.html">R과 RStudio 소개</a></td>
+<td align="left">1. <a href="http://swcarpentry.github.io/r-novice-gapminder/01-rstudio-intro.html">Introduction to R and RStudio</a></td>
+</tr>
+<tr class="even">
+<td align="left">2. <a href="http://statkclee.github.io/r-novice-gapminder/02-project-intro-kr.html">RStudio로 프로젝트 관리</a></td>
+<td align="left">2. <a href="http://swcarpentry.github.io/r-novice-gapminder/02-project-intro.html">Project management with RStudio</a></td>
+</tr>
+<tr class="odd">
+<td align="left">3. <a href="http://statkclee.github.io/r-novice-gapminder/03-seeking-help-kr.html">도움말 찾기</a></td>
+<td align="left">3. <a href="http://swcarpentry.github.io/r-novice-gapminder/03-seeking-help.html">Seeking help</a></td>
+</tr>
+<tr class="even">
+<td align="left">4. <a href="http://statkclee.github.io/r-novice-gapminder/04-data-structures-part1-kr.html">자료형과 자료구조</a></td>
+<td align="left">4. <a href="http://swcarpentry.github.io/r-novice-gapminder/04-data-structures-part1.html">Data structures</a></td>
+</tr>
+<tr class="odd">
+<td align="left">5. <a href="http://statkclee.github.io/r-novice-gapminder/05-data-structures-part2-kr.html">자료구조: 데이터프레임</a></td>
+<td align="left">5. <a href="http://swcarpentry.github.io/r-novice-gapminder/05-data-structures-part2.html">Data frames and reading in data</a></td>
+</tr>
+<tr class="even">
+<td align="left">6. <a href="http://statkclee.github.io/r-novice-gapminder/06-data-subsetting-kr.html">데이터 부분집합 만들기</a></td>
+<td align="left">6. <a href="http://swcarpentry.github.io/r-novice-gapminder/06-data-subsetting.html">Subsetting data</a></td>
+</tr>
+<tr class="odd">
+<td align="left">7. <a href="http://statkclee.github.io/r-novice-gapminder/09-vectorisation-kr.html">벡터화</a></td>
+<td align="left">7. <a href="http://swcarpentry.github.io/r-novice-gapminder/06-data-subsetting.html">Vectorisation</a></td>
+</tr>
+<tr class="even">
+<td align="left">8. <a href="http://statkclee.github.io/r-novice-gapminder/11-writing-data-kr.html">데이터 파일에 저장하기</a></td>
+<td align="left">8. <a href="http://swcarpentry.github.io/r-novice-gapminder/11-writing-data.html">Writing data</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="학습-주제">학습 주제</h2>
+<h3 id="부-수업-4-시간">1부 수업 (~ 4 시간)</h3>
+<table>
+<thead>
+<tr class="header">
+<th align="left">한국어(Korean)</th>
+<th align="left">영어(English)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1. <a href="14-data-table-kr.html">Data.table</a></td>
+<td align="left">1. <a href="14-data-table.html">Data.table</a></td>
+</tr>
+<tr class="even">
+<td align="left">2. <a href="15-reshape2-kr.html">데이터 재형성</a></td>
+<td align="left">2. <a href="15-reshape2.html">Reshaping data</a></td>
+</tr>
+<tr class="odd">
+<td align="left">3. <a href="16-for-kr.html">For 루프</a></td>
+<td align="left">3. <a href="16-for.html">For loops</a></td>
+</tr>
+<tr class="even">
+<td align="left">4. <a href="17-apply-kr.html">Apply 함수</a></td>
+<td align="left">4. <a href="17-apply.html">Apply functions</a></td>
+</tr>
+<tr class="odd">
+<td align="left">5. <a href="http://statkclee.github.io/r-novice-gapminder/10-control-flow-kr.html">제어 흐름</a></td>
+<td align="left">5. <a href="http://swcarpentry.github.io/r-novice-gapminder/10-control-flow.html">Control flow</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="부-수업-3-시간">2부 수업 (~ 3 시간)</h3>
+<table>
+<thead>
+<tr class="header">
+<th align="left">한국어(Korean)</th>
+<th align="left">영어(English)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">6. <a href="18-rmd-kr.html">R 마크다운</a></td>
+<td align="left">6. <a href="18-rmd.html">R markdown</a></td>
+</tr>
+<tr class="even">
+<td align="left">7. <a href="http://statkclee.github.io/r-novice-gapminder/12-plyr-kr.html">plyr</a></td>
+<td align="left">7. <a href="http://swcarpentry.github.io/r-novice-gapminder/12-plyr.html">plyr</a></td>
+</tr>
+<tr class="odd">
+<td align="left">8. <a href="19-foreach-kr.html">병렬 for 루프</a></td>
+<td align="left">8. <a href="19-foreach.html">Parallel for loops</a></td>
+</tr>
+<tr class="even">
+<td align="left">9. <a href="http://statkclee.github.io/r-novice-gapminder/07-functions-kr.html">함수</a></td>
+<td align="left">9. <a href="http://swcarpentry.github.io/r-novice-gapminder/07-functions.html">Functions</a></td>
+</tr>
+<tr class="odd">
+<td align="left">10. <a href="http://statkclee.github.io/r-novice-gapminder/15-wrap-up-kr.html">요약정리</a></td>
+<td align="left">10. <a href="http://swcarpentry.github.io/r-novice-gapminder/15-wrap-up.html">Wrapping up</a></td>
+</tr>
+</tbody>
+</table>
+<p>6. <a href="18-rmd-kr.html">R 마크다운</a> | 6. <a href="18-rmd.html">R markdown</a> |</p>
+<h2 id="선택-추가-학습">선택 추가 학습</h2>
+<table>
+<thead>
+<tr class="header">
+<th align="left">한국어(Korean)</th>
+<th align="left">영어(English)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">8. <a href="http://statkclee.github.io/r-novice-gapminder/08-plot-ggplot2-kr.html">ggplot2</a></td>
+<td align="left">8. <a href="http://swcarpentry.github.io/r-novice-gapminder/08-plot-ggplot2.html">ggplot2</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="추가-학습교재">추가 학습교재</h2>
+<ul>
+<li><a href="reference.html">참고문헌</a></li>
+<li><a href="instructors.html">강사 안내서</a></li>
+</ul>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="http://software-carpentry.org/v5/js/jquery-1.9.1.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+  </body>
+</html>
