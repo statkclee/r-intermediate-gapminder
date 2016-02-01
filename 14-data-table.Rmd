@@ -78,9 +78,9 @@ gap[continent == "Oceania"]
 gap_df[gap_df$continent == "Oceania",]
 ```
 
-The data table knows when we type `continent` to look for that as a column in
-the table: removing the redundant text we'd need to type for data.frames. This 
-becomes even more convenient when filtering on multiple columns:
+`continent`를 타이핑할 때, 데이터테이블은 테이블에 해당 칼럼을 찾는다:
+데이터프레임에서 타이핑할 때 필요한 불필요한 것을 제거했다.
+칼럼 다수를 필터링할 때, 훨씬 더 편리하다:
 
 ```{r}
 gap[continent == "Oceania" & country == "Australia" & year %in% c(1952, 2007)]
@@ -88,116 +88,115 @@ gap[continent == "Oceania" & country == "Australia" & year %in% c(1952, 2007)]
 gap_df[gap_df$continent == "Oceania" & gap_df$country == "Australia" & gap_df$year %in% c(1952, 2007),]
 ```
 
-Note that the data frame call will still work on the data table:
+데이터프레임 호출은 여전히 테이터테이블에도 동작함에 주목한다:
 
 ```{r}
 gap[gap$continent == "Oceania" & gap$country == "Australia" & gap$year %in% c(1952, 2007),]
 ```
 
-To select columns we use the second argument to `[`, just like data.frames:
+칼럼을 선택할 때, 데이터프레임처럼 `[` 함수에 두번째 인자를 넘겨 사용한다:
 
 ```{r}
 gap[,continent]
-# data frame equivalent
+# 데이터프레임 대응표현
 gap_df[,"continent"]
 ```
 
-To select multiple columns, we need to pass in the column names as a list:
+칼럼 다수를 선택할 때, 리스트로 칼럼명을 넘긴다:
 
 ```{r}
 gap[, list(continent, country, pop)]
-# data frame equivalent
+# 데이터프레임 대응표현
 gap_df[, c("continent", "country", "pop")]
 ```
 
-We can also rename columns in the output using the list:
+리스트를 사용해서 출력 칼럼명을 변경할 수도 있다:
 
 ```{r}
-gap[, list(a=continent, b=country, c=pop)] # This does not alter the data table
+gap[, list(a=continent, b=country, c=pop)] # 데이터테이블을 변경하지는 않는다.
 ```
 
-We can create temporary columns, those that only exist in the output data 
-structure using list arguments:
+임시 칼럼을 생성할 수도 있다. 리스트 인자를 사용해서 임시 칼럼을 생성하고, 출력 데이터구조에만 존재하게 된다:
 
 ```{r}
-# total_gdp only exists in the output
+# total_gdp 칼럼은 출력에만 존재한다.
 gap[,list(continent, country, year, total_gdp=pop*gdpPercap)]
-# Lets see what gap contains again:
+# gap에 포함된 것을 다시 확인한다:
 gap
-# The equivalent data frame call:
+# 대응되는 데이터프레임 호출:
 cbind(gap_df[,c("continent", "country", "year")], total_gdp = gap_df$pop * gap_df$gdpPercap)
 ```
 
-To create a new column in the data table, we have to use the special operator 
-`:=`:
+ 데이터테이블에 신규 칼럼을 생성할 때, `:=` 특수 연산자를 사용한다:
 
 ```{r}
-# Add a new column to the gapminder data with total gdp
+# total_gdp 칼럼을 gapminder 데이터프레임에 추가
 gap[, total_gdp := gdpPercap * pop]
-# data frame equivalent
+# 데이터프레임 대응표현
 gap_df <- cbind(gap_df, total_gdp = gap_df$gdpPercap * gap_df$pop)
 ```
 
-To delete a column, we assign it `NULL`
+칼럼을 삭제할 때, `NULL`을 칼럼에 대입한다:
 
 ```{r}
-# Delete the total_gdp column
+# total_gdp 칼럼 삭제
 gap[, total_gdp := NULL]
-# data frame equivalent
+# 데이터프레임 대응표현
 gap_df <- gap_df[, -which(names(gap_df) == "total_gdp")]
 ```
 
-### Data table specific operations
+### 데이터테이블 전용 연산자
 
-Data tables have a number of special variables that are useful in calculations:
+데이터테이블에는 연산에 도움이 되는 몇가지 특수 변수가 있다:
 
 ```{r}
-# get all the columns
+# 모든 칼럼을 얻어온다.
 gap[,.SD]
-# get the number of rows
+# 행 갯수를 얻어온다.
 gap[,.N]
-# generate indices for the rows
+# 행에 대한 인덱스를 생성한다.
 gap[,.I]
 ```
 
-These become useful in conjuction with data table's extra arguments to `[`:
+`[` 함수에 데이터테이블 추가 인자와 결합하면 매우 유용하다:
 
 ```{r}
-# How many countries in each continent?
+# 각 대륙별로 얼마나 많은 국가가 있나?
 gap[year == 2007, list(countries=.N), by=continent]
 ```
 
-The `by` argument lets you calculate things within groups:
+`by` 인자를 사용해서 그룹 집단내 연산도 쉽게 수행할 수 있다:
 
 ```{r}
-# Mean life expectancy per continent per year:
+# 대륙별 연도별 평균 기대수명:
 gap[, list(avgLifeExp=mean(lifeExp)), by=list(continent, year)]
 ```
 
-The `with` argument lets you pass in column names as a character vector:
+`with` 인자는 문자벡터로 칼럼명을 전달이 가능하게 한다:
 
 ```{r}
 gap[,c("continent", "country", "year"), with=FALSE]
 ```
 
-### Keys 
+### 키(Keys) 
 
-One of the advantages of data table is the ability to set each tables "keys":
-the columns which will act as unique identifiers for each row, for example:
+데이터테이블의 장점 하나가 각 테이블에 "키(key)"를 설정할 수 있는 능력이다:
+각 행에 대해 유일무이한 식별자로 칼럼이 동작한다. 즉:
 
 ```{r}
 setkey(gap, continent, country, year)
 ```
 
-We can see the change using the `tables` function, which shows all data tables 
-in the R session:
+`tables()` 함수를 사용해서 변경사항을 볼 수 있는데,
+R 세션에서 모든 데이터테이블을 볼 수 있다:
+
 
 ```{r}
 tables()
 ```
 
-This is really useful when you have multiple tables: allowing you to efficiently
-merge tables together, confidently and concisely:
+이 기능은 테이블이 다수 존재할 때 매우 유용하다:
+테이블을 효율적으로 병합할 수 있게 하는데, 신뢰성과 간결성도 보장한다:
 
 ```{r}
 landSize <- data.table(
@@ -213,7 +212,7 @@ gap[landSize]
 landSize[gap]
 ```
 
-To learn more about data table, you can check out the package Vignette on CRAN:
+데이터테이블에 관해 더 많은 사항을 학습하려면, CRAN 팩키지 소품문을 참고한다:
 <http://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.pdf> 
 
 
