@@ -1,0 +1,220 @@
+---
+layout: page
+title: 재현가능한 과학적 분석을 위한 중급 R 
+subtitle: data.table
+minutes: 20
+---
+
+
+> ## 학습 목표 {.objectives}
+>
+> * `data.table`을 사용해서 일반적인 데이터프레임 작업을 수행하는 방법을 이해한다.
+> * R에서 객체 구조를 면밀히 조사하는 방법을 이해한다.
+> * `data.table`에 대한 키를 설정한다.
+>
+
+먼저 `data.table` 팩키지를 학습한다. 데이터테이블은 데이터프레임에 대해 몇가지 장점이 있다:
+
+ * 데이터프레임보다 속도가 엄청 빠르다. 데이터프레임으로 몇시간 소요되는 작업이 데이터테이블로 몇초면 해결된다.
+ * 코드를 더 간결하게 작성하도록 해서, 복잡한 문장과 반복되는 부분집합 연산을 회피할 수 있다.
+ * 데이터테이블 키를 사용해서 행명칭(rownames)을 매칭하는 걱정없이, 다수 테이블을 병합/쿼리할 수 있다.
+
+### 데이터 불러 읽어오기
+
+팩키지를 불러 읽어올리고, 데이터를 불러 읽어온다:
+
+```{r}
+library("data.table")
+gap <- fread("data/gapminder-FiveYearData.csv")
+gap
+```
+
+`data.table` 팩키지로부터 `fread` 함수를 사용해서 올바르게 데이터를 불러 읽어온 것을 
+확인할 수 있다.
+데이터프레임과 달리, R이 자동으로 테이블에서 첫째와 마지막 행 5개를 출력한다.
+
+`fread`는 `read.table`과 유사하게 작동한다: 데이터에서 의미를 유추해서 적절히
+데이터를 불러오려 최대한 노력한다. 큰 테이블의 경우 `fread`가 `read.table` 보다 훨씬 더 빠르지만,
+정교함은 약간 떨어진다. 데이터를 올바르게 불러오는데 있어 `read.table` 함수 혹은 파생된 함수를 사용하고 나서, 데이터테이블로 던져 처리한다:
+
+```{r}
+# data.table 함수는 'keep.rownames = TRUE' 설정을 하지 않으면,
+# 행명칭(rownames)를 버려버린다.
+gap_df <- read.csv("data/gapminder-FiveYearData.csv")
+gap_dt2 <- as.data.table(gap_df)
+```
+
+구조함수(`str`) 함수를 사용해서, `data.table`이 정확하게 무엇으로 구성되었는지 면밀히 조사한다:
+
+```{r}
+str(gap)
+```
+
+`data.table`은 단순히 데이터프레임에 추가적인 클래스가 부착되어 있다. ".internal.selfref" 라는 특수 속성도 함께 있는데, 이는 저수준 언어로 메모리에 데이터를 작업하는데 `data.table`이 사용하는 외부 포인터다.
+
+데이터테이블은 데이터프레임을 필요로 하는 함수 대부분과 (이전 버젼과) 호환성(backwards compatible)을 유지한다. 하지만, 경우에 따라서는 객체 첫 클래스만 검사하는 함수에 대해 `as.data.frame`을 사용할 필요도 있다.
+
+상기 내용을 증명하는데, 객체 동치성을 검사한다:
+
+```{r}
+all.equal(gap, gap_df)
+all.equal(gap, gap_df, check.attributes = FALSE)
+```
+
+상기 메시지가 객체 속성은 다르지만, 밑에 깔린 데이터는 동일함을 보여주고 있다.
+
+
+### 기본 연산
+
+데이터테이블에 거의 모든 연산은 `[` 함수 내부에서 실행되고, 
+메모리 위 그자리에서 실행된다. 
+연산 일부를 살펴보고, 데이터프레임과 동등한지도 함께 알아보자:
+
+행을 선택하거나 필터링할 때, 데이터프레임과 마찬가지로 `[` 함수의 첫번째 인자를 사용한다:
+
+```{r}
+gap[continent == "Oceania"]
+# 데이터프레임 대응표현
+gap_df[gap_df$continent == "Oceania",]
+```
+
+`continent`를 타이핑할 때, 데이터테이블은 테이블에 해당 칼럼을 찾는다:
+데이터프레임에서 타이핑할 때 필요한 불필요한 것을 제거했다.
+칼럼 다수를 필터링할 때, 훨씬 더 편리하다:
+
+```{r}
+gap[continent == "Oceania" & country == "Australia" & year %in% c(1952, 2007)]
+# 데이터프레임 대응표현
+gap_df[gap_df$continent == "Oceania" & gap_df$country == "Australia" & gap_df$year %in% c(1952, 2007),]
+```
+
+데이터프레임 호출은 여전히 테이터테이블에도 동작함에 주목한다:
+
+```{r}
+gap[gap$continent == "Oceania" & gap$country == "Australia" & gap$year %in% c(1952, 2007),]
+```
+
+칼럼을 선택할 때, 데이터프레임처럼 `[` 함수에 두번째 인자를 넘겨 사용한다:
+
+```{r}
+gap[,continent]
+# 데이터프레임 대응표현
+gap_df[,"continent"]
+```
+
+칼럼 다수를 선택할 때, 리스트로 칼럼명을 넘긴다:
+
+```{r}
+gap[, list(continent, country, pop)]
+# 데이터프레임 대응표현
+gap_df[, c("continent", "country", "pop")]
+```
+
+리스트를 사용해서 출력 칼럼명을 변경할 수도 있다:
+
+```{r}
+gap[, list(a=continent, b=country, c=pop)] # 데이터테이블을 변경하지는 않는다.
+```
+
+임시 칼럼을 생성할 수도 있다. 리스트 인자를 사용해서 임시 칼럼을 생성하고, 출력 데이터구조에만 존재하게 된다:
+
+```{r}
+# total_gdp 칼럼은 출력에만 존재한다.
+gap[,list(continent, country, year, total_gdp=pop*gdpPercap)]
+# gap에 포함된 것을 다시 확인한다:
+gap
+# 대응되는 데이터프레임 호출:
+cbind(gap_df[,c("continent", "country", "year")], total_gdp = gap_df$pop * gap_df$gdpPercap)
+```
+
+ 데이터테이블에 신규 칼럼을 생성할 때, `:=` 특수 연산자를 사용한다:
+
+```{r}
+# total_gdp 칼럼을 gapminder 데이터프레임에 추가
+gap[, total_gdp := gdpPercap * pop]
+# 데이터프레임 대응표현
+gap_df <- cbind(gap_df, total_gdp = gap_df$gdpPercap * gap_df$pop)
+```
+
+칼럼을 삭제할 때, `NULL`을 칼럼에 대입한다:
+
+```{r}
+# total_gdp 칼럼 삭제
+gap[, total_gdp := NULL]
+# 데이터프레임 대응표현
+gap_df <- gap_df[, -which(names(gap_df) == "total_gdp")]
+```
+
+### 데이터테이블 전용 연산자
+
+데이터테이블에는 연산에 도움이 되는 몇가지 특수 변수가 있다:
+
+```{r}
+# 모든 칼럼을 얻어온다.
+gap[,.SD]
+# 행 갯수를 얻어온다.
+gap[,.N]
+# 행에 대한 인덱스를 생성한다.
+gap[,.I]
+```
+
+`[` 함수에 데이터테이블 추가 인자와 결합하면 매우 유용하다:
+
+```{r}
+# 각 대륙별로 얼마나 많은 국가가 있나?
+gap[year == 2007, list(countries=.N), by=continent]
+```
+
+`by` 인자를 사용해서 그룹 집단내 연산도 쉽게 수행할 수 있다:
+
+```{r}
+# 대륙별 연도별 평균 기대수명:
+gap[, list(avgLifeExp=mean(lifeExp)), by=list(continent, year)]
+```
+
+`with` 인자는 문자벡터로 칼럼명을 전달이 가능하게 한다:
+
+```{r}
+gap[,c("continent", "country", "year"), with=FALSE]
+```
+
+### 키(Keys) 
+
+데이터테이블의 장점 하나가 각 테이블에 "키(key)"를 설정할 수 있는 능력이다:
+각 행에 대해 유일무이한 식별자로 칼럼이 동작한다. 즉:
+
+```{r}
+setkey(gap, continent, country, year)
+```
+
+`tables()` 함수를 사용해서 변경사항을 볼 수 있는데,
+R 세션에서 모든 데이터테이블을 볼 수 있다:
+
+
+```{r}
+tables()
+```
+
+이 기능은 테이블이 다수 존재할 때 매우 유용하다:
+테이블을 효율적으로 병합할 수 있게 하는데, 신뢰성과 간결성도 보장한다:
+
+```{r}
+landSize <- data.table(
+  country=c("Australia", "New Zealand"),
+  size=c(7692024, 268021)
+)
+setkey(landSize, country)
+setkey(gap, country)
+# Join landSize to gap, keeping only 'keys' (rows) in gap that also exist in
+# landSize
+gap[landSize]
+# And vice-versa:
+landSize[gap]
+```
+
+데이터테이블에 관해 더 많은 사항을 학습하려면, CRAN 팩키지 소품문을 참고한다:
+<http://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.pdf> 
+
+
+
+
