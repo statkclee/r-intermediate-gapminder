@@ -1,41 +1,57 @@
----
-layout: page
-title: Intermediate R for reproducible scientific analysis
-subtitle: data.table
-minutes: 20
----
-
-
-> ## Learning objectives {.objectives}
->
-> * To know how to perform common data.frame tasks using data.table
-> * To know how to examine the structure of objects in R
-> * To be able to set keys for data.table
->
-
-First, we will be learning about the `data.table` package. Data tables
-have a number of advantages over data frames:
-
- * It provides a huge speed increase over data frames. Tasks that would
-   normally take hours with a data frame take seconds with data tables.
- * It is much more concise to write and allows you to avoid complicated
-   which statements and repeated subsetting.
- * Its key system allows you to merge/query multiple tables without 
-   worrying about matching rownames.
-
-### Reading in data
-
-Let's load in the package and read in some data:
-
-
-```r
-library("data.table")
-gap <- fread("data/gapminder-FiveYearData.csv")
-gap
-```
-
-```
-##           country year      pop continent lifeExp gdpPercap
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="generator" content="pandoc">
+    <title>Software Carpentry: 재현가능한 과학적 분석을 위한 중급 R</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
+    <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/swc.css" />
+    <link rel="alternate" type="application/rss+xml" title="Software Carpentry Blog" href="http://software-carpentry.org/feed.xml"/>
+    <meta charset="UTF-8" />
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body class="lesson">
+    <div class="container card">
+      <div class="banner">
+        <a href="http://software-carpentry.org" title="Software Carpentry">
+          <img alt="Software Carpentry banner" src="img/software-carpentry-banner.png" />
+        </a>
+      </div>
+      <article>
+      <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+                    <a href="index.html"><h1 class="title">재현가능한 과학적 분석을 위한 중급 R</h1></a>
+          <h2 class="subtitle">data.table</h2>
+          <section class="objectives panel panel-warning">
+<div class="panel-heading">
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
+</div>
+<div class="panel-body">
+<ul>
+<li><code>data.table</code>을 사용해서 일반적인 데이터프레임 작업을 수행하는 방법을 이해한다.</li>
+<li>R에서 객체 구조를 면밀히 조사하는 방법을 이해한다.</li>
+<li><code>data.table</code>에 대한 키를 설정한다.</li>
+</ul>
+</div>
+</section>
+<p>먼저 <code>data.table</code> 팩키지를 학습한다. 데이터테이블은 데이터프레임에 대해 몇가지 장점이 있다:</p>
+<ul>
+<li>데이터프레임보다 속도가 엄청 빠르다. 데이터프레임으로 몇시간 소요되는 작업이 데이터테이블로 몇초면 해결된다.</li>
+<li>코드를 더 간결하게 작성하도록 해서, 복잡한 문장과 반복되는 부분집합 연산을 회피할 수 있다.</li>
+<li>데이터테이블 키를 사용해서 행명칭(rownames)을 매칭하는 걱정없이, 다수 테이블을 병합/쿼리할 수 있다.</li>
+</ul>
+<h3 id="데이터-불러-읽어오기">데이터 불러 읽어오기</h3>
+<p>팩키지를 불러 읽어올리고, 데이터를 불러 읽어온다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;data.table&quot;</span>)
+gap &lt;-<span class="st"> </span><span class="kw">fread</span>(<span class="st">&quot;data/gapminder-FiveYearData.csv&quot;</span>)
+gap</code></pre></div>
+<pre><code>##           country year      pop continent lifeExp gdpPercap
 ##    1: Afghanistan 1952  8425333      Asia  28.801  779.4453
 ##    2: Afghanistan 1957  9240934      Asia  30.332  820.8530
 ##    3: Afghanistan 1962 10267083      Asia  31.997  853.1007
@@ -46,92 +62,36 @@ gap
 ## 1701:    Zimbabwe 1992 10704340    Africa  60.377  693.4208
 ## 1702:    Zimbabwe 1997 11404948    Africa  46.809  792.4500
 ## 1703:    Zimbabwe 2002 11926563    Africa  39.989  672.0386
-## 1704:    Zimbabwe 2007 12311143    Africa  43.487  469.7093
-```
-
-We can see the data has loaded correctly using the `fread` function from the 
-data.table package. Note that unlike data frames, R will print out the first and 
-last 5 rows ofthe table.
-
-`fread` works similary to `read.table`: it tries to make
-sense of the data and read it in appropriately. It is much faster than 
-`read.table` for large tables, but is slightly less sophisticated. You may find
-yourself needing to use `read.table` or one of its derivative functions to load
-in data correctly, then casting to a data table:
-
-
-```r
-# Note that as.data.table will throw out rownames unless you set 
-#'keep.rownames = TRUE'
-gap_df <- read.csv("data/gapminder-FiveYearData.csv")
-gap_dt2 <- as.data.table(gap_df)
-```
-
-We can use the structure function (`str`) to examine what exactly a data.table 
-is:
-
-
-```r
-str(gap)
-```
-
-```
-## Classes 'data.table' and 'data.frame':	1704 obs. of  6 variables:
-##  $ country  : chr  "Afghanistan" "Afghanistan" "Afghanistan" "Afghanistan" ...
+## 1704:    Zimbabwe 2007 12311143    Africa  43.487  469.7093</code></pre>
+<p><code>data.table</code> 팩키지로부터 <code>fread</code> 함수를 사용해서 올바르게 데이터를 불러 읽어온 것을 확인할 수 있다. 데이터프레임과 달리, R이 자동으로 테이블에서 첫째와 마지막 행 5개를 출력한다.</p>
+<p><code>fread</code>는 <code>read.table</code>과 유사하게 작동한다: 데이터에서 의미를 유추해서 적절히 데이터를 불러오려 최대한 노력한다. 큰 테이블의 경우 <code>fread</code>가 <code>read.table</code> 보다 훨씬 더 빠르지만, 정교함은 약간 떨어진다. 데이터를 올바르게 불러오는데 있어 <code>read.table</code> 함수 혹은 파생된 함수를 사용하고 나서, 데이터테이블로 던져 처리한다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># data.table 함수는 &#39;keep.rownames = TRUE&#39; 설정을 하지 않으면,</span>
+<span class="co"># 행명칭(rownames)를 버려버린다.</span>
+gap_df &lt;-<span class="st"> </span><span class="kw">read.csv</span>(<span class="st">&quot;data/gapminder-FiveYearData.csv&quot;</span>)
+gap_dt2 &lt;-<span class="st"> </span><span class="kw">as.data.table</span>(gap_df)</code></pre></div>
+<p>구조함수(<code>str</code>) 함수를 사용해서, <code>data.table</code>이 정확하게 무엇으로 구성되었는지 면밀히 조사한다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(gap)</code></pre></div>
+<pre><code>## Classes &#39;data.table&#39; and &#39;data.frame&#39;:   1704 obs. of  6 variables:
+##  $ country  : chr  &quot;Afghanistan&quot; &quot;Afghanistan&quot; &quot;Afghanistan&quot; &quot;Afghanistan&quot; ...
 ##  $ year     : int  1952 1957 1962 1967 1972 1977 1982 1987 1992 1997 ...
 ##  $ pop      : num  8425333 9240934 10267083 11537966 13079460 ...
-##  $ continent: chr  "Asia" "Asia" "Asia" "Asia" ...
+##  $ continent: chr  &quot;Asia&quot; &quot;Asia&quot; &quot;Asia&quot; &quot;Asia&quot; ...
 ##  $ lifeExp  : num  28.8 30.3 32 34 36.1 ...
 ##  $ gdpPercap: num  779 821 853 836 740 ...
-##  - attr(*, ".internal.selfref")=<externalptr>
-```
-
-A data.table is simply a data.frame with an additional class attached to it, 
-along with a special attribute, ".internal.selfref", which is an external pointer
-that data.table uses to work with the data in memory in a lower level language.
-
-Data tables are backwards compatible with most functions that require data 
-frames, however you may occasionally find that you need to cast them using
-`as.data.frame` on functions which check only the first class of the object.
-
-To prove this to ourself, we can check the objets for equality:
-
-
-```r
-all.equal(gap, gap_df)
-```
-
-```
-## Error in `:=`((i), .xi): Check that is.data.table(DT) == TRUE. Otherwise, := and `:=`(...) are defined for use in j, once only and in particular ways. See help(":=").
-```
-
-```r
-all.equal(gap, gap_df, check.attributes = FALSE)
-```
-
-```
-## Error in `:=`((i), .xi): Check that is.data.table(DT) == TRUE. Otherwise, := and `:=`(...) are defined for use in j, once only and in particular ways. See help(":=").
-```
-
-This shows us that the only the attributes of the object are different, but the
-underlying data is the same.
-
-### Basic operations
-
-Nearly all operations on data tables are performed inside the `[` function, and
-are performed in place in memory. Let's take a look at some operations and their
-data frame equivalents:
-
-To select or filter rows, we use the first argument of `[` just like with data
-frames:
-
-
-```r
-gap[continent == "Oceania"]
-```
-
-```
-##         country year      pop continent lifeExp gdpPercap
+##  - attr(*, &quot;.internal.selfref&quot;)=&lt;externalptr&gt;</code></pre>
+<p><code>data.table</code>은 단순히 데이터프레임에 추가적인 클래스가 부착되어 있다. “.internal.selfref” 라는 특수 속성도 함께 있는데, 이는 저수준 언어로 메모리에 데이터를 작업하는데 <code>data.table</code>이 사용하는 외부 포인터다.</p>
+<p>데이터테이블은 데이터프레임을 필요로 하는 함수 대부분과 (이전 버젼과) 호환성(backwards compatible)을 유지한다. 하지만, 경우에 따라서는 객체 첫 클래스만 검사하는 함수에 대해 <code>as.data.frame</code>을 사용할 필요도 있다.</p>
+<p>상기 내용을 증명하는데, 객체 동치성을 검사한다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">all.equal</span>(gap, gap_df)</code></pre></div>
+<pre><code>## Error in `:=`((i), .xi): Check that is.data.table(DT) == TRUE. Otherwise, := and `:=`(...) are defined for use in j, once only and in particular ways. See help(&quot;:=&quot;).</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">all.equal</span>(gap, gap_df, <span class="dt">check.attributes =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## Error in `:=`((i), .xi): Check that is.data.table(DT) == TRUE. Otherwise, := and `:=`(...) are defined for use in j, once only and in particular ways. See help(&quot;:=&quot;).</code></pre>
+<p>상기 메시지가 객체 속성은 다르지만, 밑에 깔린 데이터는 동일함을 보여주고 있다.</p>
+<h3 id="기본-연산">기본 연산</h3>
+<p>데이터테이블에 거의 모든 연산은 <code>[</code> 함수 내부에서 실행되고, 메모리 위 그자리에서 실행된다. 연산 일부를 살펴보고, 데이터프레임과 동등한지도 함께 알아보자:</p>
+<p>행을 선택하거나 필터링할 때, 데이터프레임과 마찬가지로 <code>[</code> 함수의 첫번째 인자를 사용한다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap[continent ==<span class="st"> &quot;Oceania&quot;</span>]</code></pre></div>
+<pre><code>##         country year      pop continent lifeExp gdpPercap
 ##  1:   Australia 1952  8691212   Oceania  69.120  10039.60
 ##  2:   Australia 1957  9712569   Oceania  70.330  10949.65
 ##  3:   Australia 1962 10794968   Oceania  70.930  12217.23
@@ -156,16 +116,10 @@ gap[continent == "Oceania"]
 ## 22: New Zealand 1997  3676187   Oceania  77.550  21050.41
 ## 23: New Zealand 2002  3908037   Oceania  79.110  23189.80
 ## 24: New Zealand 2007  4115771   Oceania  80.204  25185.01
-##         country year      pop continent lifeExp gdpPercap
-```
-
-```r
-# data frame equivalent
-gap_df[gap_df$continent == "Oceania",]
-```
-
-```
-##          country year      pop continent lifeExp gdpPercap
+##         country year      pop continent lifeExp gdpPercap</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 데이터프레임 대응표현</span>
+gap_df[gap_df$continent ==<span class="st"> &quot;Oceania&quot;</span>,]</code></pre></div>
+<pre><code>##          country year      pop continent lifeExp gdpPercap
 ## 61     Australia 1952  8691212   Oceania  69.120  10039.60
 ## 62     Australia 1957  9712569   Oceania  70.330  10949.65
 ## 63     Australia 1962 10794968   Oceania  70.930  12217.23
@@ -189,349 +143,311 @@ gap_df[gap_df$continent == "Oceania",]
 ## 1101 New Zealand 1992  3437674   Oceania  76.330  18363.32
 ## 1102 New Zealand 1997  3676187   Oceania  77.550  21050.41
 ## 1103 New Zealand 2002  3908037   Oceania  79.110  23189.80
-## 1104 New Zealand 2007  4115771   Oceania  80.204  25185.01
-```
-
-The data table knows when we type `continent` to look for that as a column in
-the table: removing the redundant text we'd need to type for data.frames. This 
-becomes even more convenient when filtering on multiple columns:
-
-
-```r
-gap[continent == "Oceania" & country == "Australia" & year %in% c(1952, 2007)]
-```
-
-```
-##      country year      pop continent lifeExp gdpPercap
+## 1104 New Zealand 2007  4115771   Oceania  80.204  25185.01</code></pre>
+<p><code>continent</code>를 타이핑할 때, 데이터테이블은 테이블에 해당 칼럼을 찾는다: 데이터프레임에서 타이핑할 때 필요한 불필요한 것을 제거했다. 칼럼 다수를 필터링할 때, 훨씬 더 편리하다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap[continent ==<span class="st"> &quot;Oceania&quot;</span> &amp;<span class="st"> </span>country ==<span class="st"> &quot;Australia&quot;</span> &amp;<span class="st"> </span>year %in%<span class="st"> </span><span class="kw">c</span>(<span class="dv">1952</span>, <span class="dv">2007</span>)]</code></pre></div>
+<pre><code>##      country year      pop continent lifeExp gdpPercap
 ## 1: Australia 1952  8691212   Oceania  69.120  10039.60
-## 2: Australia 2007 20434176   Oceania  81.235  34435.37
-```
-
-```r
-# data frame equivalent
-gap_df[gap_df$continent == "Oceania" & gap_df$country == "Australia" & gap_df$year %in% c(1952, 2007),]
-```
-
-```
-##      country year      pop continent lifeExp gdpPercap
+## 2: Australia 2007 20434176   Oceania  81.235  34435.37</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 데이터프레임 대응표현</span>
+gap_df[gap_df$continent ==<span class="st"> &quot;Oceania&quot;</span> &amp;<span class="st"> </span>gap_df$country ==<span class="st"> &quot;Australia&quot;</span> &amp;<span class="st"> </span>gap_df$year %in%<span class="st"> </span><span class="kw">c</span>(<span class="dv">1952</span>, <span class="dv">2007</span>),]</code></pre></div>
+<pre><code>##      country year      pop continent lifeExp gdpPercap
 ## 61 Australia 1952  8691212   Oceania  69.120  10039.60
-## 72 Australia 2007 20434176   Oceania  81.235  34435.37
-```
-
-Note that the data frame call will still work on the data table:
-
-
-```r
-gap[gap$continent == "Oceania" & gap$country == "Australia" & gap$year %in% c(1952, 2007),]
-```
-
-```
-##      country year      pop continent lifeExp gdpPercap
+## 72 Australia 2007 20434176   Oceania  81.235  34435.37</code></pre>
+<p>데이터프레임 호출은 여전히 테이터테이블에도 동작함에 주목한다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap[gap$continent ==<span class="st"> &quot;Oceania&quot;</span> &amp;<span class="st"> </span>gap$country ==<span class="st"> &quot;Australia&quot;</span> &amp;<span class="st"> </span>gap$year %in%<span class="st"> </span><span class="kw">c</span>(<span class="dv">1952</span>, <span class="dv">2007</span>),]</code></pre></div>
+<pre><code>##      country year      pop continent lifeExp gdpPercap
 ## 1: Australia 1952  8691212   Oceania  69.120  10039.60
-## 2: Australia 2007 20434176   Oceania  81.235  34435.37
-```
-
-To select columns we use the second argument to `[`, just like data.frames:
-
-
-```r
-gap[,continent]
-```
-
-```
-##    [1] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##    [7] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##   [13] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##   [19] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##   [25] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##   [31] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##   [37] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##   [43] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##   [49] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##   [55] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##   [61] "Oceania"  "Oceania"  "Oceania"  "Oceania"  "Oceania"  "Oceania" 
-##   [67] "Oceania"  "Oceania"  "Oceania"  "Oceania"  "Oceania"  "Oceania" 
-##   [73] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##   [79] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##   [85] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##   [91] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##   [97] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [103] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [109] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [115] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [121] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [127] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [133] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [139] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [145] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [151] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [157] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [163] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [169] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [175] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [181] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [187] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [193] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [199] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [205] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [211] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [217] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [223] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [229] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [235] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [241] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [247] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [253] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [259] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [265] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [271] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [277] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [283] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [289] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [295] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [301] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [307] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [313] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [319] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [325] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [331] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [337] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [343] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [349] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [355] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [361] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [367] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [373] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [379] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [385] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [391] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [397] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [403] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [409] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [415] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [421] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [427] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [433] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [439] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [445] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [451] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [457] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [463] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [469] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [475] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [481] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [487] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [493] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [499] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [505] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [511] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [517] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [523] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [529] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [535] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [541] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [547] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [553] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [559] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [565] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [571] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [577] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [583] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [589] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [595] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [601] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [607] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [613] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [619] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [625] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [631] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [637] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [643] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [649] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [655] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [661] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [667] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [673] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [679] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [685] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [691] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [697] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [703] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [709] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [715] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [721] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [727] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [733] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [739] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [745] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [751] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [757] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [763] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [769] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [775] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-##  [781] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [787] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [793] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [799] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [805] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [811] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [817] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [823] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [829] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [835] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [841] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [847] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [853] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [859] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [865] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [871] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [877] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [883] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [889] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [895] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [901] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [907] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [913] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [919] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [925] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [931] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [937] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [943] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-##  [949] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [955] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [961] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [967] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [973] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [979] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-##  [985] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [991] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-##  [997] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1003] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1009] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1015] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1021] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1027] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1033] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1039] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1045] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1051] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1057] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1063] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1069] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1075] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1081] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1087] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1093] "Oceania"  "Oceania"  "Oceania"  "Oceania"  "Oceania"  "Oceania" 
-## [1099] "Oceania"  "Oceania"  "Oceania"  "Oceania"  "Oceania"  "Oceania" 
-## [1105] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1111] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1117] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1123] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1129] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1135] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1141] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1147] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1153] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1159] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1165] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1171] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1177] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1183] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1189] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1195] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1201] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1207] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1213] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1219] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1225] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1231] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1237] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1243] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1249] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1255] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1261] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1267] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1273] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1279] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1285] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1291] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1297] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1303] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1309] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1315] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1321] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1327] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1333] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1339] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1345] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1351] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1357] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1363] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1369] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1375] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1381] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1387] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1393] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1399] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1405] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1411] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1417] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1423] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1429] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1435] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1441] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1447] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1453] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1459] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1465] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1471] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1477] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1483] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1489] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1495] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1501] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1507] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1513] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1519] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1525] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1531] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1537] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1543] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1549] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1555] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1561] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1567] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1573] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1579] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1585] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1591] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1597] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1603] "Europe"   "Europe"   "Europe"   "Europe"   "Europe"   "Europe"  
-## [1609] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1615] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1621] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1627] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1633] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1639] "Americas" "Americas" "Americas" "Americas" "Americas" "Americas"
-## [1645] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1651] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1657] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1663] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1669] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1675] "Asia"     "Asia"     "Asia"     "Asia"     "Asia"     "Asia"    
-## [1681] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1687] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1693] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"  
-## [1699] "Africa"   "Africa"   "Africa"   "Africa"   "Africa"   "Africa"
-```
-
-```r
-# data frame equivalent
-gap_df[,"continent"]
-```
-
-```
-##    [1] Asia     Asia     Asia     Asia     Asia     Asia     Asia    
+## 2: Australia 2007 20434176   Oceania  81.235  34435.37</code></pre>
+<p>칼럼을 선택할 때, 데이터프레임처럼 <code>[</code> 함수에 두번째 인자를 넘겨 사용한다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap[,continent]</code></pre></div>
+<pre><code>##    [1] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##    [7] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##   [13] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##   [19] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##   [25] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##   [31] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##   [37] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##   [43] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##   [49] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##   [55] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##   [61] &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot; 
+##   [67] &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot; 
+##   [73] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##   [79] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##   [85] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##   [91] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##   [97] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [103] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [109] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [115] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [121] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [127] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [133] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [139] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [145] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [151] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [157] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [163] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [169] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [175] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [181] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [187] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [193] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [199] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [205] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [211] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [217] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [223] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [229] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [235] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [241] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [247] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [253] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [259] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [265] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [271] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [277] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [283] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [289] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [295] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [301] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [307] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [313] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [319] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [325] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [331] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [337] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [343] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [349] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [355] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [361] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [367] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [373] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [379] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [385] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [391] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [397] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [403] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [409] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [415] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [421] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [427] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [433] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [439] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [445] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [451] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [457] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [463] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [469] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [475] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [481] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [487] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [493] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [499] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [505] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [511] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [517] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [523] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [529] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [535] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [541] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [547] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [553] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [559] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [565] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [571] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [577] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [583] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [589] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [595] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [601] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [607] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [613] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [619] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [625] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [631] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [637] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [643] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [649] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [655] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [661] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [667] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [673] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [679] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [685] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [691] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [697] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [703] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [709] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [715] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [721] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [727] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [733] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [739] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [745] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [751] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [757] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [763] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [769] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [775] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+##  [781] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [787] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [793] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [799] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [805] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [811] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [817] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [823] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [829] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [835] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [841] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [847] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [853] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [859] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [865] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [871] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [877] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [883] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [889] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [895] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [901] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [907] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [913] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [919] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [925] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [931] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [937] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [943] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+##  [949] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [955] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [961] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [967] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [973] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [979] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+##  [985] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [991] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+##  [997] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1003] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1009] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1015] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1021] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1027] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1033] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1039] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1045] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1051] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1057] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1063] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1069] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1075] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1081] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1087] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1093] &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot; 
+## [1099] &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot;  &quot;Oceania&quot; 
+## [1105] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1111] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1117] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1123] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1129] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1135] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1141] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1147] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1153] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1159] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1165] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1171] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1177] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1183] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1189] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1195] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1201] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1207] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1213] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1219] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1225] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1231] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1237] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1243] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1249] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1255] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1261] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1267] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1273] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1279] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1285] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1291] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1297] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1303] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1309] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1315] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1321] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1327] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1333] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1339] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1345] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1351] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1357] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1363] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1369] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1375] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1381] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1387] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1393] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1399] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1405] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1411] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1417] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1423] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1429] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1435] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1441] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1447] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1453] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1459] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1465] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1471] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1477] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1483] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1489] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1495] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1501] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1507] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1513] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1519] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1525] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1531] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1537] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1543] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1549] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1555] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1561] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1567] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1573] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1579] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1585] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1591] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1597] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1603] &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;   &quot;Europe&quot;  
+## [1609] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1615] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1621] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1627] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1633] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1639] &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot; &quot;Americas&quot;
+## [1645] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1651] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1657] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1663] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1669] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1675] &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;     &quot;Asia&quot;    
+## [1681] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1687] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1693] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;  
+## [1699] &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;   &quot;Africa&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 데이터프레임 대응표현</span>
+gap_df[,<span class="st">&quot;continent&quot;</span>]</code></pre></div>
+<pre><code>##    [1] Asia     Asia     Asia     Asia     Asia     Asia     Asia    
 ##    [8] Asia     Asia     Asia     Asia     Asia     Europe   Europe  
 ##   [15] Europe   Europe   Europe   Europe   Europe   Europe   Europe  
 ##   [22] Europe   Europe   Europe   Africa   Africa   Africa   Africa  
@@ -775,18 +691,10 @@ gap_df[,"continent"]
 ## [1688] Africa   Africa   Africa   Africa   Africa   Africa   Africa  
 ## [1695] Africa   Africa   Africa   Africa   Africa   Africa   Africa  
 ## [1702] Africa   Africa   Africa  
-## Levels: Africa Americas Asia Europe Oceania
-```
-
-To select multiple columns, we need to pass in the column names as a list:
-
-
-```r
-gap[, list(continent, country, pop)]
-```
-
-```
-##       continent     country      pop
+## Levels: Africa Americas Asia Europe Oceania</code></pre>
+<p>칼럼 다수를 선택할 때, 리스트로 칼럼명을 넘긴다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap[, <span class="kw">list</span>(continent, country, pop)]</code></pre></div>
+<pre><code>##       continent     country      pop
 ##    1:      Asia Afghanistan  8425333
 ##    2:      Asia Afghanistan  9240934
 ##    3:      Asia Afghanistan 10267083
@@ -797,16 +705,10 @@ gap[, list(continent, country, pop)]
 ## 1701:    Africa    Zimbabwe 10704340
 ## 1702:    Africa    Zimbabwe 11404948
 ## 1703:    Africa    Zimbabwe 11926563
-## 1704:    Africa    Zimbabwe 12311143
-```
-
-```r
-# data frame equivalent
-gap_df[, c("continent", "country", "pop")]
-```
-
-```
-##      continent                  country        pop
+## 1704:    Africa    Zimbabwe 12311143</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 데이터프레임 대응표현</span>
+gap_df[, <span class="kw">c</span>(<span class="st">&quot;continent&quot;</span>, <span class="st">&quot;country&quot;</span>, <span class="st">&quot;pop&quot;</span>)]</code></pre></div>
+<pre><code>##      continent                  country        pop
 ## 1         Asia              Afghanistan    8425333
 ## 2         Asia              Afghanistan    9240934
 ## 3         Asia              Afghanistan   10267083
@@ -1167,18 +1069,18 @@ gap_df[, c("continent", "country", "pop")]
 ## 358   Americas               Costa Rica    3518107
 ## 359   Americas               Costa Rica    3834934
 ## 360   Americas               Costa Rica    4133884
-## 361     Africa            Cote d'Ivoire    2977019
-## 362     Africa            Cote d'Ivoire    3300000
-## 363     Africa            Cote d'Ivoire    3832408
-## 364     Africa            Cote d'Ivoire    4744870
-## 365     Africa            Cote d'Ivoire    6071696
-## 366     Africa            Cote d'Ivoire    7459574
-## 367     Africa            Cote d'Ivoire    9025951
-## 368     Africa            Cote d'Ivoire   10761098
-## 369     Africa            Cote d'Ivoire   12772596
-## 370     Africa            Cote d'Ivoire   14625967
-## 371     Africa            Cote d'Ivoire   16252726
-## 372     Africa            Cote d'Ivoire   18013409
+## 361     Africa            Cote d&#39;Ivoire    2977019
+## 362     Africa            Cote d&#39;Ivoire    3300000
+## 363     Africa            Cote d&#39;Ivoire    3832408
+## 364     Africa            Cote d&#39;Ivoire    4744870
+## 365     Africa            Cote d&#39;Ivoire    6071696
+## 366     Africa            Cote d&#39;Ivoire    7459574
+## 367     Africa            Cote d&#39;Ivoire    9025951
+## 368     Africa            Cote d&#39;Ivoire   10761098
+## 369     Africa            Cote d&#39;Ivoire   12772596
+## 370     Africa            Cote d&#39;Ivoire   14625967
+## 371     Africa            Cote d&#39;Ivoire   16252726
+## 372     Africa            Cote d&#39;Ivoire   18013409
 ## 373     Europe                  Croatia    3882229
 ## 374     Europe                  Croatia    3991242
 ## 375     Europe                  Croatia    4076557
@@ -2510,18 +2412,10 @@ gap_df[, c("continent", "country", "pop")]
 ## 1701    Africa                 Zimbabwe   10704340
 ## 1702    Africa                 Zimbabwe   11404948
 ## 1703    Africa                 Zimbabwe   11926563
-## 1704    Africa                 Zimbabwe   12311143
-```
-
-We can also rename columns in the output using the list:
-
-
-```r
-gap[, list(a=continent, b=country, c=pop)] # This does not alter the data table
-```
-
-```
-##            a           b        c
+## 1704    Africa                 Zimbabwe   12311143</code></pre>
+<p>리스트를 사용해서 출력 칼럼명을 변경할 수도 있다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap[, <span class="kw">list</span>(<span class="dt">a=</span>continent, <span class="dt">b=</span>country, <span class="dt">c=</span>pop)] <span class="co"># 데이터테이블을 변경하지는 않는다.</span></code></pre></div>
+<pre><code>##            a           b        c
 ##    1:   Asia Afghanistan  8425333
 ##    2:   Asia Afghanistan  9240934
 ##    3:   Asia Afghanistan 10267083
@@ -2532,20 +2426,11 @@ gap[, list(a=continent, b=country, c=pop)] # This does not alter the data table
 ## 1701: Africa    Zimbabwe 10704340
 ## 1702: Africa    Zimbabwe 11404948
 ## 1703: Africa    Zimbabwe 11926563
-## 1704: Africa    Zimbabwe 12311143
-```
-
-We can create temporary columns, those that only exist in the output data 
-structure using list arguments:
-
-
-```r
-# total_gdp only exists in the output
-gap[,list(continent, country, year, total_gdp=pop*gdpPercap)]
-```
-
-```
-##       continent     country year  total_gdp
+## 1704: Africa    Zimbabwe 12311143</code></pre>
+<p>임시 칼럼을 생성할 수도 있다. 리스트 인자를 사용해서 임시 칼럼을 생성하고, 출력 데이터구조에만 존재하게 된다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># total_gdp 칼럼은 출력에만 존재한다.</span>
+gap[,<span class="kw">list</span>(continent, country, year, <span class="dt">total_gdp=</span>pop*gdpPercap)]</code></pre></div>
+<pre><code>##       continent     country year  total_gdp
 ##    1:      Asia Afghanistan 1952 6567086330
 ##    2:      Asia Afghanistan 1957 7585448670
 ##    3:      Asia Afghanistan 1962 8758855797
@@ -2556,16 +2441,10 @@ gap[,list(continent, country, year, total_gdp=pop*gdpPercap)]
 ## 1701:    Africa    Zimbabwe 1992 7422611852
 ## 1702:    Africa    Zimbabwe 1997 9037850590
 ## 1703:    Africa    Zimbabwe 2002 8015110972
-## 1704:    Africa    Zimbabwe 2007 5782658337
-```
-
-```r
-# Lets see what gap contains again:
-gap
-```
-
-```
-##           country year      pop continent lifeExp gdpPercap
+## 1704:    Africa    Zimbabwe 2007 5782658337</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># gap에 포함된 것을 다시 확인한다:</span>
+gap</code></pre></div>
+<pre><code>##           country year      pop continent lifeExp gdpPercap
 ##    1: Afghanistan 1952  8425333      Asia  28.801  779.4453
 ##    2: Afghanistan 1957  9240934      Asia  30.332  820.8530
 ##    3: Afghanistan 1962 10267083      Asia  31.997  853.1007
@@ -2576,16 +2455,10 @@ gap
 ## 1701:    Zimbabwe 1992 10704340    Africa  60.377  693.4208
 ## 1702:    Zimbabwe 1997 11404948    Africa  46.809  792.4500
 ## 1703:    Zimbabwe 2002 11926563    Africa  39.989  672.0386
-## 1704:    Zimbabwe 2007 12311143    Africa  43.487  469.7093
-```
-
-```r
-# The equivalent data frame call:
-cbind(gap_df[,c("continent", "country", "year")], total_gdp = gap_df$pop * gap_df$gdpPercap)
-```
-
-```
-##      continent                  country year    total_gdp
+## 1704:    Zimbabwe 2007 12311143    Africa  43.487  469.7093</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 대응되는 데이터프레임 호출:</span>
+<span class="kw">cbind</span>(gap_df[,<span class="kw">c</span>(<span class="st">&quot;continent&quot;</span>, <span class="st">&quot;country&quot;</span>, <span class="st">&quot;year&quot;</span>)], <span class="dt">total_gdp =</span> gap_df$pop *<span class="st"> </span>gap_df$gdpPercap)</code></pre></div>
+<pre><code>##      continent                  country year    total_gdp
 ## 1         Asia              Afghanistan 1952 6.567086e+09
 ## 2         Asia              Afghanistan 1957 7.585449e+09
 ## 3         Asia              Afghanistan 1962 8.758856e+09
@@ -2946,18 +2819,18 @@ cbind(gap_df[,c("continent", "country", "year")], total_gdp = gap_df$pop * gap_d
 ## 358   Americas               Costa Rica 1997 2.349056e+10
 ## 359   Americas               Costa Rica 2002 2.961891e+10
 ## 360   Americas               Costa Rica 2007 3.987157e+10
-## 361     Africa            Cote d'Ivoire 1952 4.133873e+09
-## 362     Africa            Cote d'Ivoire 1957 4.952957e+09
-## 363     Africa            Cote d'Ivoire 1962 6.625733e+09
-## 364     Africa            Cote d'Ivoire 1967 9.736713e+09
-## 365     Africa            Cote d'Ivoire 1972 1.443971e+10
-## 366     Africa            Cote d'Ivoire 1977 1.878124e+10
-## 367     Africa            Cote d'Ivoire 1982 2.349193e+10
-## 368     Africa            Cote d'Ivoire 1987 2.321122e+10
-## 369     Africa            Cote d'Ivoire 1992 2.105018e+10
-## 370     Africa            Cote d'Ivoire 1997 2.612586e+10
-## 371     Africa            Cote d'Ivoire 2002 2.679751e+10
-## 372     Africa            Cote d'Ivoire 2007 2.782622e+10
+## 361     Africa            Cote d&#39;Ivoire 1952 4.133873e+09
+## 362     Africa            Cote d&#39;Ivoire 1957 4.952957e+09
+## 363     Africa            Cote d&#39;Ivoire 1962 6.625733e+09
+## 364     Africa            Cote d&#39;Ivoire 1967 9.736713e+09
+## 365     Africa            Cote d&#39;Ivoire 1972 1.443971e+10
+## 366     Africa            Cote d&#39;Ivoire 1977 1.878124e+10
+## 367     Africa            Cote d&#39;Ivoire 1982 2.349193e+10
+## 368     Africa            Cote d&#39;Ivoire 1987 2.321122e+10
+## 369     Africa            Cote d&#39;Ivoire 1992 2.105018e+10
+## 370     Africa            Cote d&#39;Ivoire 1997 2.612586e+10
+## 371     Africa            Cote d&#39;Ivoire 2002 2.679751e+10
+## 372     Africa            Cote d&#39;Ivoire 2007 2.782622e+10
 ## 373     Europe                  Croatia 1952 1.210959e+10
 ## 374     Europe                  Croatia 1957 1.731493e+10
 ## 375     Europe                  Croatia 1962 2.233093e+10
@@ -4289,42 +4162,22 @@ cbind(gap_df[,c("continent", "country", "year")], total_gdp = gap_df$pop * gap_d
 ## 1701    Africa                 Zimbabwe 1992 7.422612e+09
 ## 1702    Africa                 Zimbabwe 1997 9.037851e+09
 ## 1703    Africa                 Zimbabwe 2002 8.015111e+09
-## 1704    Africa                 Zimbabwe 2007 5.782658e+09
-```
-
-To create a new column in the data table, we have to use the special operator 
-`:=`:
-
-
-```r
-# Add a new column to the gapminder data with total gdp
-gap[, total_gdp := gdpPercap * pop]
-# data frame equivalent
-gap_df <- cbind(gap_df, total_gdp = gap_df$gdpPercap * gap_df$pop)
-```
-
-To delete a column, we assign it `NULL`
-
-
-```r
-# Delete the total_gdp column
-gap[, total_gdp := NULL]
-# data frame equivalent
-gap_df <- gap_df[, -which(names(gap_df) == "total_gdp")]
-```
-
-### Data table specific operations
-
-Data tables have a number of special variables that are useful in calculations:
-
-
-```r
-# get all the columns
-gap[,.SD]
-```
-
-```
-##           country year      pop continent lifeExp gdpPercap
+## 1704    Africa                 Zimbabwe 2007 5.782658e+09</code></pre>
+<p>데이터테이블에 신규 칼럼을 생성할 때, <code>:=</code> 특수 연산자를 사용한다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># total_gdp 칼럼을 gapminder 데이터프레임에 추가</span>
+gap[, total_gdp :<span class="er">=</span><span class="st"> </span>gdpPercap *<span class="st"> </span>pop]
+<span class="co"># 데이터프레임 대응표현</span>
+gap_df &lt;-<span class="st"> </span><span class="kw">cbind</span>(gap_df, <span class="dt">total_gdp =</span> gap_df$gdpPercap *<span class="st"> </span>gap_df$pop)</code></pre></div>
+<p>칼럼을 삭제할 때, <code>NULL</code>을 칼럼에 대입한다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># total_gdp 칼럼 삭제</span>
+gap[, total_gdp :<span class="er">=</span><span class="st"> </span><span class="ot">NULL</span>]
+<span class="co"># 데이터프레임 대응표현</span>
+gap_df &lt;-<span class="st"> </span>gap_df[, -<span class="kw">which</span>(<span class="kw">names</span>(gap_df) ==<span class="st"> &quot;total_gdp&quot;</span>)]</code></pre></div>
+<h3 id="데이터테이블-전용-연산자">데이터테이블 전용 연산자</h3>
+<p>데이터테이블에는 연산에 도움이 되는 몇가지 특수 변수가 있다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 모든 칼럼을 얻어온다.</span>
+gap[,.SD]</code></pre></div>
+<pre><code>##           country year      pop continent lifeExp gdpPercap
 ##    1: Afghanistan 1952  8425333      Asia  28.801  779.4453
 ##    2: Afghanistan 1957  9240934      Asia  30.332  820.8530
 ##    3: Afghanistan 1962 10267083      Asia  31.997  853.1007
@@ -4335,25 +4188,13 @@ gap[,.SD]
 ## 1701:    Zimbabwe 1992 10704340    Africa  60.377  693.4208
 ## 1702:    Zimbabwe 1997 11404948    Africa  46.809  792.4500
 ## 1703:    Zimbabwe 2002 11926563    Africa  39.989  672.0386
-## 1704:    Zimbabwe 2007 12311143    Africa  43.487  469.7093
-```
-
-```r
-# get the number of rows
-gap[,.N]
-```
-
-```
-## [1] 1704
-```
-
-```r
-# generate indices for the rows
-gap[,.I]
-```
-
-```
-##    [1]    1    2    3    4    5    6    7    8    9   10   11   12   13
+## 1704:    Zimbabwe 2007 12311143    Africa  43.487  469.7093</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 행 갯수를 얻어온다.</span>
+gap[,.N]</code></pre></div>
+<pre><code>## [1] 1704</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 행에 대한 인덱스를 생성한다.</span>
+gap[,.I]</code></pre></div>
+<pre><code>##    [1]    1    2    3    4    5    6    7    8    9   10   11   12   13
 ##   [14]   14   15   16   17   18   19   20   21   22   23   24   25   26
 ##   [27]   27   28   29   30   31   32   33   34   35   36   37   38   39
 ##   [40]   40   41   42   43   44   45   46   47   48   49   50   51   52
@@ -4484,36 +4325,20 @@ gap[,.I]
 ## [1665] 1665 1666 1667 1668 1669 1670 1671 1672 1673 1674 1675 1676 1677
 ## [1678] 1678 1679 1680 1681 1682 1683 1684 1685 1686 1687 1688 1689 1690
 ## [1691] 1691 1692 1693 1694 1695 1696 1697 1698 1699 1700 1701 1702 1703
-## [1704] 1704
-```
-
-These become useful in conjuction with data table's extra arguments to `[`:
-
-
-```r
-# How many countries in each continent?
-gap[year == 2007, list(countries=.N), by=continent]
-```
-
-```
-##    continent countries
+## [1704] 1704</code></pre>
+<p><code>[</code> 함수에 데이터테이블 추가 인자와 결합하면 매우 유용하다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 각 대륙별로 얼마나 많은 국가가 있나?</span>
+gap[year ==<span class="st"> </span><span class="dv">2007</span>, <span class="kw">list</span>(<span class="dt">countries=</span>.N), by=continent]</code></pre></div>
+<pre><code>##    continent countries
 ## 1:      Asia        33
 ## 2:    Europe        30
 ## 3:    Africa        52
 ## 4:  Americas        25
-## 5:   Oceania         2
-```
-
-The `by` argument lets you calculate things within groups:
-
-
-```r
-# Mean life expectancy per continent per year:
-gap[, list(avgLifeExp=mean(lifeExp)), by=list(continent, year)]
-```
-
-```
-##     continent year avgLifeExp
+## 5:   Oceania         2</code></pre>
+<p><code>by</code> 인자를 사용해서 그룹 집단내 연산도 쉽게 수행할 수 있다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 대륙별 연도별 평균 기대수명:</span>
+gap[, <span class="kw">list</span>(<span class="dt">avgLifeExp=</span><span class="kw">mean</span>(lifeExp)), by=<span class="kw">list</span>(continent, year)]</code></pre></div>
+<pre><code>##     continent year avgLifeExp
 ##  1:      Asia 1952   46.31439
 ##  2:      Asia 1957   49.31854
 ##  3:      Asia 1962   51.56322
@@ -4574,18 +4399,10 @@ gap[, list(avgLifeExp=mean(lifeExp)), by=list(continent, year)]
 ## 58:   Oceania 1997   78.19000
 ## 59:   Oceania 2002   79.74000
 ## 60:   Oceania 2007   80.71950
-##     continent year avgLifeExp
-```
-
-The `with` argument lets you pass in column names as a character vector:
-
-
-```r
-gap[,c("continent", "country", "year"), with=FALSE]
-```
-
-```
-##       continent     country year
+##     continent year avgLifeExp</code></pre>
+<p><code>with</code> 인자는 문자벡터로 칼럼명을 전달이 가능하게 한다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap[,<span class="kw">c</span>(<span class="st">&quot;continent&quot;</span>, <span class="st">&quot;country&quot;</span>, <span class="st">&quot;year&quot;</span>), with=<span class="ot">FALSE</span>]</code></pre></div>
+<pre><code>##       continent     country year
 ##    1:      Asia Afghanistan 1952
 ##    2:      Asia Afghanistan 1957
 ##    3:      Asia Afghanistan 1962
@@ -4596,55 +4413,30 @@ gap[,c("continent", "country", "year"), with=FALSE]
 ## 1701:    Africa    Zimbabwe 1992
 ## 1702:    Africa    Zimbabwe 1997
 ## 1703:    Africa    Zimbabwe 2002
-## 1704:    Africa    Zimbabwe 2007
-```
-
-### Keys 
-
-One of the advantages of data table is the ability to set each tables "keys":
-the columns which will act as unique identifiers for each row, for example:
-
-
-```r
-setkey(gap, continent, country, year)
-```
-
-We can see the change using the `tables` function, which shows all data tables 
-in the R session:
-
-
-```r
-tables()
-```
-
-```
-##      NAME     NROW NCOL MB COLS                                        
+## 1704:    Africa    Zimbabwe 2007</code></pre>
+<h3 id="키keys">키(Keys)</h3>
+<p>데이터테이블의 장점 하나가 각 테이블에 “키(key)”를 설정할 수 있는 능력이다: 각 행에 대해 유일무이한 식별자로 칼럼이 동작한다. 즉:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setkey</span>(gap, continent, country, year)</code></pre></div>
+<p><code>tables()</code> 함수를 사용해서 변경사항을 볼 수 있는데, R 세션에서 모든 데이터테이블을 볼 수 있다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tables</span>()</code></pre></div>
+<pre><code>##      NAME     NROW NCOL MB COLS                                        
 ## [1,] gap     1,704    6  1 country,year,pop,continent,lifeExp,gdpPercap
 ## [2,] gap_dt2 1,704    6  1 country,year,pop,continent,lifeExp,gdpPercap
 ##      KEY                   
 ## [1,] continent,country,year
 ## [2,]                       
-## Total: 2MB
-```
-
-This is really useful when you have multiple tables: allowing you to efficiently
-merge tables together, confidently and concisely:
-
-
-```r
-landSize <- data.table(
-  country=c("Australia", "New Zealand"),
-  size=c(7692024, 268021)
+## Total: 2MB</code></pre>
+<p>이 기능은 테이블이 다수 존재할 때 매우 유용하다: 테이블을 효율적으로 병합할 수 있게 하는데, 신뢰성과 간결성도 보장한다:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">landSize &lt;-<span class="st"> </span><span class="kw">data.table</span>(
+  <span class="dt">country=</span><span class="kw">c</span>(<span class="st">&quot;Australia&quot;</span>, <span class="st">&quot;New Zealand&quot;</span>),
+  <span class="dt">size=</span><span class="kw">c</span>(<span class="dv">7692024</span>, <span class="dv">268021</span>)
 )
-setkey(landSize, country)
-setkey(gap, country)
-# Join landSize to gap, keeping only 'keys' (rows) in gap that also exist in
-# landSize
-gap[landSize]
-```
-
-```
-##         country year      pop continent lifeExp gdpPercap    size
+<span class="kw">setkey</span>(landSize, country)
+<span class="kw">setkey</span>(gap, country)
+<span class="co"># Join landSize to gap, keeping only &#39;keys&#39; (rows) in gap that also exist in</span>
+<span class="co"># landSize</span>
+gap[landSize]</code></pre></div>
+<pre><code>##         country year      pop continent lifeExp gdpPercap    size
 ##  1:   Australia 1952  8691212   Oceania  69.120  10039.60 7692024
 ##  2:   Australia 1957  9712569   Oceania  70.330  10949.65 7692024
 ##  3:   Australia 1962 10794968   Oceania  70.930  12217.23 7692024
@@ -4669,16 +4461,10 @@ gap[landSize]
 ## 22: New Zealand 1997  3676187   Oceania  77.550  21050.41  268021
 ## 23: New Zealand 2002  3908037   Oceania  79.110  23189.80  268021
 ## 24: New Zealand 2007  4115771   Oceania  80.204  25185.01  268021
-##         country year      pop continent lifeExp gdpPercap    size
-```
-
-```r
-# And vice-versa:
-landSize[gap]
-```
-
-```
-##           country size year      pop continent lifeExp gdpPercap
+##         country year      pop continent lifeExp gdpPercap    size</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># And vice-versa:</span>
+landSize[gap]</code></pre></div>
+<pre><code>##           country size year      pop continent lifeExp gdpPercap
 ##    1: Afghanistan   NA 1952  8425333      Asia  28.801  779.4453
 ##    2: Afghanistan   NA 1957  9240934      Asia  30.332  820.8530
 ##    3: Afghanistan   NA 1962 10267083      Asia  31.997  853.1007
@@ -4689,11 +4475,20 @@ landSize[gap]
 ## 1701:    Zimbabwe   NA 1992 10704340    Africa  60.377  693.4208
 ## 1702:    Zimbabwe   NA 1997 11404948    Africa  46.809  792.4500
 ## 1703:    Zimbabwe   NA 2002 11926563    Africa  39.989  672.0386
-## 1704:    Zimbabwe   NA 2007 12311143    Africa  43.487  469.7093
-```
-
-To learn more about data table, you can check out the package Vignette on CRAN:
-<http://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.pdf>
-
-
-
+## 1704:    Zimbabwe   NA 2007 12311143    Africa  43.487  469.7093</code></pre>
+<p>데이터테이블에 관해 더 많은 사항을 학습하려면, CRAN 팩키지 소품문을 참고한다: <a href="http://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.pdf" class="uri">http://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.pdf</a></p>
+        </div>
+      </div>
+      </article>
+      <div class="footer">
+        <a class="label swc-blue-bg" href="http://software-carpentry.org">Software Carpentry</a>
+        <a class="label swc-blue-bg" href="https://github.com/swcarpentry/lesson-template">Source</a>
+        <a class="label swc-blue-bg" href="mailto:admin@software-carpentry.org">Contact</a>
+        <a class="label swc-blue-bg" href="LICENSE.html">License</a>
+      </div>
+    </div>
+    <!-- Javascript placed at the end of the document so the pages load faster -->
+    <script src="http://software-carpentry.org/v5/js/jquery-1.9.1.min.js"></script>
+    <script src="css/bootstrap/bootstrap-js/bootstrap.js"></script>
+  </body>
+</html>

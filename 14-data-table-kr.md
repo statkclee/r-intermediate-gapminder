@@ -1,31 +1,27 @@
 ---
 layout: page
-title: Intermediate R for reproducible scientific analysis
+title: 재현가능한 과학적 분석을 위한 중급 R 
 subtitle: data.table
 minutes: 20
 ---
 
 
-> ## Learning objectives {.objectives}
+> ## 학습 목표 {.objectives}
 >
-> * To know how to perform common data.frame tasks using data.table
-> * To know how to examine the structure of objects in R
-> * To be able to set keys for data.table
+> * `data.table`을 사용해서 일반적인 데이터프레임 작업을 수행하는 방법을 이해한다.
+> * R에서 객체 구조를 면밀히 조사하는 방법을 이해한다.
+> * `data.table`에 대한 키를 설정한다.
 >
 
-First, we will be learning about the `data.table` package. Data tables
-have a number of advantages over data frames:
+먼저 `data.table` 팩키지를 학습한다. 데이터테이블은 데이터프레임에 대해 몇가지 장점이 있다:
 
- * It provides a huge speed increase over data frames. Tasks that would
-   normally take hours with a data frame take seconds with data tables.
- * It is much more concise to write and allows you to avoid complicated
-   which statements and repeated subsetting.
- * Its key system allows you to merge/query multiple tables without 
-   worrying about matching rownames.
+ * 데이터프레임보다 속도가 엄청 빠르다. 데이터프레임으로 몇시간 소요되는 작업이 데이터테이블로 몇초면 해결된다.
+ * 코드를 더 간결하게 작성하도록 해서, 복잡한 문장과 반복되는 부분집합 연산을 회피할 수 있다.
+ * 데이터테이블 키를 사용해서 행명칭(rownames)을 매칭하는 걱정없이, 다수 테이블을 병합/쿼리할 수 있다.
 
-### Reading in data
+### 데이터 불러 읽어오기
 
-Let's load in the package and read in some data:
+팩키지를 불러 읽어올리고, 데이터를 불러 읽어온다:
 
 
 ```r
@@ -49,26 +45,23 @@ gap
 ## 1704:    Zimbabwe 2007 12311143    Africa  43.487  469.7093
 ```
 
-We can see the data has loaded correctly using the `fread` function from the 
-data.table package. Note that unlike data frames, R will print out the first and 
-last 5 rows ofthe table.
+`data.table` 팩키지로부터 `fread` 함수를 사용해서 올바르게 데이터를 불러 읽어온 것을 
+확인할 수 있다.
+데이터프레임과 달리, R이 자동으로 테이블에서 첫째와 마지막 행 5개를 출력한다.
 
-`fread` works similary to `read.table`: it tries to make
-sense of the data and read it in appropriately. It is much faster than 
-`read.table` for large tables, but is slightly less sophisticated. You may find
-yourself needing to use `read.table` or one of its derivative functions to load
-in data correctly, then casting to a data table:
+`fread`는 `read.table`과 유사하게 작동한다: 데이터에서 의미를 유추해서 적절히
+데이터를 불러오려 최대한 노력한다. 큰 테이블의 경우 `fread`가 `read.table` 보다 훨씬 더 빠르지만,
+정교함은 약간 떨어진다. 데이터를 올바르게 불러오는데 있어 `read.table` 함수 혹은 파생된 함수를 사용하고 나서, 데이터테이블로 던져 처리한다:
 
 
 ```r
-# Note that as.data.table will throw out rownames unless you set 
-#'keep.rownames = TRUE'
+# data.table 함수는 'keep.rownames = TRUE' 설정을 하지 않으면,
+# 행명칭(rownames)를 버려버린다.
 gap_df <- read.csv("data/gapminder-FiveYearData.csv")
 gap_dt2 <- as.data.table(gap_df)
 ```
 
-We can use the structure function (`str`) to examine what exactly a data.table 
-is:
+구조함수(`str`) 함수를 사용해서, `data.table`이 정확하게 무엇으로 구성되었는지 면밀히 조사한다:
 
 
 ```r
@@ -86,15 +79,11 @@ str(gap)
 ##  - attr(*, ".internal.selfref")=<externalptr>
 ```
 
-A data.table is simply a data.frame with an additional class attached to it, 
-along with a special attribute, ".internal.selfref", which is an external pointer
-that data.table uses to work with the data in memory in a lower level language.
+`data.table`은 단순히 데이터프레임에 추가적인 클래스가 부착되어 있다. ".internal.selfref" 라는 특수 속성도 함께 있는데, 이는 저수준 언어로 메모리에 데이터를 작업하는데 `data.table`이 사용하는 외부 포인터다.
 
-Data tables are backwards compatible with most functions that require data 
-frames, however you may occasionally find that you need to cast them using
-`as.data.frame` on functions which check only the first class of the object.
+데이터테이블은 데이터프레임을 필요로 하는 함수 대부분과 (이전 버젼과) 호환성(backwards compatible)을 유지한다. 하지만, 경우에 따라서는 객체 첫 클래스만 검사하는 함수에 대해 `as.data.frame`을 사용할 필요도 있다.
 
-To prove this to ourself, we can check the objets for equality:
+상기 내용을 증명하는데, 객체 동치성을 검사한다:
 
 
 ```r
@@ -113,17 +102,16 @@ all.equal(gap, gap_df, check.attributes = FALSE)
 ## Error in `:=`((i), .xi): Check that is.data.table(DT) == TRUE. Otherwise, := and `:=`(...) are defined for use in j, once only and in particular ways. See help(":=").
 ```
 
-This shows us that the only the attributes of the object are different, but the
-underlying data is the same.
+상기 메시지가 객체 속성은 다르지만, 밑에 깔린 데이터는 동일함을 보여주고 있다.
 
-### Basic operations
 
-Nearly all operations on data tables are performed inside the `[` function, and
-are performed in place in memory. Let's take a look at some operations and their
-data frame equivalents:
+### 기본 연산
 
-To select or filter rows, we use the first argument of `[` just like with data
-frames:
+데이터테이블에 거의 모든 연산은 `[` 함수 내부에서 실행되고, 
+메모리 위 그자리에서 실행된다. 
+연산 일부를 살펴보고, 데이터프레임과 동등한지도 함께 알아보자:
+
+행을 선택하거나 필터링할 때, 데이터프레임과 마찬가지로 `[` 함수의 첫번째 인자를 사용한다:
 
 
 ```r
@@ -160,7 +148,7 @@ gap[continent == "Oceania"]
 ```
 
 ```r
-# data frame equivalent
+# 데이터프레임 대응표현
 gap_df[gap_df$continent == "Oceania",]
 ```
 
@@ -192,9 +180,9 @@ gap_df[gap_df$continent == "Oceania",]
 ## 1104 New Zealand 2007  4115771   Oceania  80.204  25185.01
 ```
 
-The data table knows when we type `continent` to look for that as a column in
-the table: removing the redundant text we'd need to type for data.frames. This 
-becomes even more convenient when filtering on multiple columns:
+`continent`를 타이핑할 때, 데이터테이블은 테이블에 해당 칼럼을 찾는다:
+데이터프레임에서 타이핑할 때 필요한 불필요한 것을 제거했다.
+칼럼 다수를 필터링할 때, 훨씬 더 편리하다:
 
 
 ```r
@@ -208,7 +196,7 @@ gap[continent == "Oceania" & country == "Australia" & year %in% c(1952, 2007)]
 ```
 
 ```r
-# data frame equivalent
+# 데이터프레임 대응표현
 gap_df[gap_df$continent == "Oceania" & gap_df$country == "Australia" & gap_df$year %in% c(1952, 2007),]
 ```
 
@@ -218,7 +206,7 @@ gap_df[gap_df$continent == "Oceania" & gap_df$country == "Australia" & gap_df$ye
 ## 72 Australia 2007 20434176   Oceania  81.235  34435.37
 ```
 
-Note that the data frame call will still work on the data table:
+데이터프레임 호출은 여전히 테이터테이블에도 동작함에 주목한다:
 
 
 ```r
@@ -231,7 +219,7 @@ gap[gap$continent == "Oceania" & gap$country == "Australia" & gap$year %in% c(19
 ## 2: Australia 2007 20434176   Oceania  81.235  34435.37
 ```
 
-To select columns we use the second argument to `[`, just like data.frames:
+칼럼을 선택할 때, 데이터프레임처럼 `[` 함수에 두번째 인자를 넘겨 사용한다:
 
 
 ```r
@@ -526,7 +514,7 @@ gap[,continent]
 ```
 
 ```r
-# data frame equivalent
+# 데이터프레임 대응표현
 gap_df[,"continent"]
 ```
 
@@ -778,7 +766,7 @@ gap_df[,"continent"]
 ## Levels: Africa Americas Asia Europe Oceania
 ```
 
-To select multiple columns, we need to pass in the column names as a list:
+칼럼 다수를 선택할 때, 리스트로 칼럼명을 넘긴다:
 
 
 ```r
@@ -801,7 +789,7 @@ gap[, list(continent, country, pop)]
 ```
 
 ```r
-# data frame equivalent
+# 데이터프레임 대응표현
 gap_df[, c("continent", "country", "pop")]
 ```
 
@@ -2513,11 +2501,11 @@ gap_df[, c("continent", "country", "pop")]
 ## 1704    Africa                 Zimbabwe   12311143
 ```
 
-We can also rename columns in the output using the list:
+리스트를 사용해서 출력 칼럼명을 변경할 수도 있다:
 
 
 ```r
-gap[, list(a=continent, b=country, c=pop)] # This does not alter the data table
+gap[, list(a=continent, b=country, c=pop)] # 데이터테이블을 변경하지는 않는다.
 ```
 
 ```
@@ -2535,12 +2523,11 @@ gap[, list(a=continent, b=country, c=pop)] # This does not alter the data table
 ## 1704: Africa    Zimbabwe 12311143
 ```
 
-We can create temporary columns, those that only exist in the output data 
-structure using list arguments:
+임시 칼럼을 생성할 수도 있다. 리스트 인자를 사용해서 임시 칼럼을 생성하고, 출력 데이터구조에만 존재하게 된다:
 
 
 ```r
-# total_gdp only exists in the output
+# total_gdp 칼럼은 출력에만 존재한다.
 gap[,list(continent, country, year, total_gdp=pop*gdpPercap)]
 ```
 
@@ -2560,7 +2547,7 @@ gap[,list(continent, country, year, total_gdp=pop*gdpPercap)]
 ```
 
 ```r
-# Lets see what gap contains again:
+# gap에 포함된 것을 다시 확인한다:
 gap
 ```
 
@@ -2580,7 +2567,7 @@ gap
 ```
 
 ```r
-# The equivalent data frame call:
+# 대응되는 데이터프레임 호출:
 cbind(gap_df[,c("continent", "country", "year")], total_gdp = gap_df$pop * gap_df$gdpPercap)
 ```
 
@@ -4292,34 +4279,33 @@ cbind(gap_df[,c("continent", "country", "year")], total_gdp = gap_df$pop * gap_d
 ## 1704    Africa                 Zimbabwe 2007 5.782658e+09
 ```
 
-To create a new column in the data table, we have to use the special operator 
-`:=`:
+ 데이터테이블에 신규 칼럼을 생성할 때, `:=` 특수 연산자를 사용한다:
 
 
 ```r
-# Add a new column to the gapminder data with total gdp
+# total_gdp 칼럼을 gapminder 데이터프레임에 추가
 gap[, total_gdp := gdpPercap * pop]
-# data frame equivalent
+# 데이터프레임 대응표현
 gap_df <- cbind(gap_df, total_gdp = gap_df$gdpPercap * gap_df$pop)
 ```
 
-To delete a column, we assign it `NULL`
+칼럼을 삭제할 때, `NULL`을 칼럼에 대입한다:
 
 
 ```r
-# Delete the total_gdp column
+# total_gdp 칼럼 삭제
 gap[, total_gdp := NULL]
-# data frame equivalent
+# 데이터프레임 대응표현
 gap_df <- gap_df[, -which(names(gap_df) == "total_gdp")]
 ```
 
-### Data table specific operations
+### 데이터테이블 전용 연산자
 
-Data tables have a number of special variables that are useful in calculations:
+데이터테이블에는 연산에 도움이 되는 몇가지 특수 변수가 있다:
 
 
 ```r
-# get all the columns
+# 모든 칼럼을 얻어온다.
 gap[,.SD]
 ```
 
@@ -4339,7 +4325,7 @@ gap[,.SD]
 ```
 
 ```r
-# get the number of rows
+# 행 갯수를 얻어온다.
 gap[,.N]
 ```
 
@@ -4348,7 +4334,7 @@ gap[,.N]
 ```
 
 ```r
-# generate indices for the rows
+# 행에 대한 인덱스를 생성한다.
 gap[,.I]
 ```
 
@@ -4487,11 +4473,11 @@ gap[,.I]
 ## [1704] 1704
 ```
 
-These become useful in conjuction with data table's extra arguments to `[`:
+`[` 함수에 데이터테이블 추가 인자와 결합하면 매우 유용하다:
 
 
 ```r
-# How many countries in each continent?
+# 각 대륙별로 얼마나 많은 국가가 있나?
 gap[year == 2007, list(countries=.N), by=continent]
 ```
 
@@ -4504,11 +4490,11 @@ gap[year == 2007, list(countries=.N), by=continent]
 ## 5:   Oceania         2
 ```
 
-The `by` argument lets you calculate things within groups:
+`by` 인자를 사용해서 그룹 집단내 연산도 쉽게 수행할 수 있다:
 
 
 ```r
-# Mean life expectancy per continent per year:
+# 대륙별 연도별 평균 기대수명:
 gap[, list(avgLifeExp=mean(lifeExp)), by=list(continent, year)]
 ```
 
@@ -4577,7 +4563,7 @@ gap[, list(avgLifeExp=mean(lifeExp)), by=list(continent, year)]
 ##     continent year avgLifeExp
 ```
 
-The `with` argument lets you pass in column names as a character vector:
+`with` 인자는 문자벡터로 칼럼명을 전달이 가능하게 한다:
 
 
 ```r
@@ -4599,18 +4585,19 @@ gap[,c("continent", "country", "year"), with=FALSE]
 ## 1704:    Africa    Zimbabwe 2007
 ```
 
-### Keys 
+### 키(Keys) 
 
-One of the advantages of data table is the ability to set each tables "keys":
-the columns which will act as unique identifiers for each row, for example:
+데이터테이블의 장점 하나가 각 테이블에 "키(key)"를 설정할 수 있는 능력이다:
+각 행에 대해 유일무이한 식별자로 칼럼이 동작한다. 즉:
 
 
 ```r
 setkey(gap, continent, country, year)
 ```
 
-We can see the change using the `tables` function, which shows all data tables 
-in the R session:
+`tables()` 함수를 사용해서 변경사항을 볼 수 있는데,
+R 세션에서 모든 데이터테이블을 볼 수 있다:
+
 
 
 ```r
@@ -4627,8 +4614,8 @@ tables()
 ## Total: 2MB
 ```
 
-This is really useful when you have multiple tables: allowing you to efficiently
-merge tables together, confidently and concisely:
+이 기능은 테이블이 다수 존재할 때 매우 유용하다:
+테이블을 효율적으로 병합할 수 있게 하는데, 신뢰성과 간결성도 보장한다:
 
 
 ```r
@@ -4692,8 +4679,9 @@ landSize[gap]
 ## 1704:    Zimbabwe   NA 2007 12311143    Africa  43.487  469.7093
 ```
 
-To learn more about data table, you can check out the package Vignette on CRAN:
-<http://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.pdf>
+데이터테이블에 관해 더 많은 사항을 학습하려면, CRAN 팩키지 소품문을 참고한다:
+<http://cran.r-project.org/web/packages/data.table/vignettes/datatable-intro.pdf> 
+
 
 
 
