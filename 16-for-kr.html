@@ -39,9 +39,9 @@
 </div>
 </section>
 <h3 id="반복되는-연산">반복되는 연산</h3>
-<p>Often when we’re trying to solve a problem or run some analysis we find ourselves doing the same thing over, and over, and over again on different groupings of data, or on different files, or with slight parameter variations.</p>
-<p>The great thing about R, and programming in general, is it allows us to be <strong>lazy</strong>. Why do a repetitive task if you can make the computer do it for you?</p>
-<p>For example, lets say I wanted to calculated the total population for each continent in the gapminder dataset in 2007. We could do this in several ways, but the most basic approach is manually:</p>
+<p>문제를 해결하려 시도하거나, 분석을 실행할 때, 데이터 다른 그룹 집단 혹은 다른 파일 혹은 변수를 변형해서 동일한 작업을 반복하는 경우가 있다.</p>
+<p>R에 관한 훌륭한 점, 일반적으로 프로그래밍의 대단한 점은 <strong>게으름(lazy)</strong>을 피울 수 있게 한다는 점이다. 컴퓨터가 대신 작업을 수행하게 되면, 왜 반복적인 작업을 우리가 직접 실행해야 되나?</p>
+<p>예를 들어, 2007년 <code>gapminder</code> 데이터셋에서 각 대륙별로 전체 인구를 계산한다고 가정해보자. 몇가지 방식으로 연산작업을 실행할 수 있지만, 가장 기본적인 접근법은 수작업이다:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap[year ==<span class="st"> </span><span class="dv">2007</span> &amp;<span class="st"> </span>continent ==<span class="st"> &quot;Asia&quot;</span>, <span class="kw">sum</span>(pop)]</code></pre></div>
 <pre class="output"><code>[1] 3811953827
 </code></pre>
@@ -57,8 +57,8 @@
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap[year ==<span class="st"> </span><span class="dv">2007</span> &amp;<span class="st"> </span>continent ==<span class="st"> &quot;Oceania&quot;</span>, <span class="kw">sum</span>(pop)]</code></pre></div>
 <pre class="output"><code>[1] 24549947
 </code></pre>
-<p>This is tedious to type out. We can do it, but imagine if we wanted to run some calculation for each country!</p>
-<p>The clever way to do this would be to use our recently acquired data.table skills:</p>
+<p>타이핑이 지겨울 수 있지만, 무난히 수행해 낼 수 있다. 하지만, 각 국가별로 어떤 연산을 수행하는 것을 상상해보라!</p>
+<p>상기 작업을 수행할 수 있는 더 총명한 방법은 최근에 익힌 <code>data.table</code> 기술을 사용하는 것이다:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap[year ==<span class="st"> </span><span class="dv">2007</span>, <span class="kw">sum</span>(pop), by=continent]</code></pre></div>
 <pre class="output"><code>   continent         V1
 1:      Asia 3811953827
@@ -67,8 +67,8 @@
 4:  Americas  898871184
 5:   Oceania   24549947
 </code></pre>
-<p>But sometimes the solution to a problem isn’t obvious, or doesn’t fit into a format we’re used to, so it’s helpful to have multiple tools in our problem-solving toolbox to fall back on.</p>
-<p>With a for loop we can instead <em>iterate</em> over each continent, and tell R to run the same command:</p>
+<p>하지만, 문제에 대한 해결책이 명확하지 않거나, 익숙히 사용했던 형태에 들어맞지는 않는다. 그래서, 문제해결 도구상자에 언제라도 믿고 쓸 수 있는 도구 다수를 구비하는 것이 도움이 된다.</p>
+<p>대신에 <code>for</code> 루프를 가지고, 각 대륙별로 <em>반복(iterate)</em>해서, 동일한 명령을 실행하도록 R에게 지시한다:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">for (cc in gap[,<span class="kw">unique</span>(continent)]) {
   popsum &lt;-<span class="st"> </span>gap[year ==<span class="st"> </span>yy &amp;<span class="st"> </span>continent ==<span class="st"> </span>cc, <span class="kw">sum</span>(pop)]
   <span class="kw">print</span>(<span class="kw">paste</span>(cc, <span class="st">&quot;:&quot;</span>, popsum))
