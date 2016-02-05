@@ -1,29 +1,27 @@
 ---
 layout: page
-title: Intermediate R for reproducible scientific analysis
-subtitle: Apply functions
+title: 재현가능한 과학적 분석을 위한 중급 R 
+subtitle: Apply 함수
 minutes: 20
 ---
 
 
-> ## Learning objectives {.objectives}
+> ## 학습 목표 {.objectives}
 >
-> * To learn how to use *apply* to automate tasks efficiently
-> * To know the difference between `apply`, `lapply`, `sapply`, `tapply` and 
->   `mapply`.
+> * *apply* 함수를 사용해서 작업을 효율적으로 자동화하는 방법을 학습한다.
+> * `apply`, `lapply`, `sapply`, `tapply`, 
+>   `mapply` 함수간 차이를 이해한다.
 >
 
-### Vectorized task automation
+### 벡터화 작업 자동화
 
-Previously we introduced you to `for` loops: a basic programming construct that 
-is common across many programming languages. R has more optimised way of 
-automating tasks that are not only faster than for loops, but also take away the
-pain of having to pre-define your results object.
+앞서 `for` 루프를 소개했다: 많은 프로그래밍 언어에서 공통된 기본 프로그래밍 구성체(construct).
+R에는 작업을 자동화하는 더 최적화된 방식이 있는데 `for` 루프보다 속도가 더 빠를 뿐만 아니라, 결과 객체를 사전에 정의해야되는 고통도 함께 가져가 버렸다.
 
-The most common function you will encounter is `lapply`, and the closely related
-`sapply`. 
+접하게 되는 가장 흔한 함수가 `lapply`가 되는데, 이 함수는 `sapply`와 매우 밀접하게 연관되어 있다.
 
-Lets take a look at the following `for` loop: 
+다음 `for` 루프를 살펴보자:
+
 
 ~~~{.r}
 for (cc in gap[,unique(continent)]) {
@@ -32,10 +30,7 @@ for (cc in gap[,unique(continent)]) {
 }
 ~~~
 
-It calculates the total population on each continent, then prints out the result.
-If instead we want to save these results, we can either make a vector in advance
-and save the results, or use one of the `apply` to take care of this detail for
-us:
+상기 함수는 각 대륙별로 전체 인구를 계산하고 나서 결과를 출력한다. 바로 출력하는 대신에 결과를 저장하려면, 사전에 벡터를 미리 생성하고 나서 결과를 저장하거나, `apply` 계열 함수 하나를 선택하면 세부적인 사항은 알아서 자동 수행한다:
 
 
 ~~~{.r}
@@ -67,18 +62,10 @@ $Oceania
 
 ~~~
 
-`lapply` takes a vector (or list) as its first argument (in this case a vector 
-of the continent names), then a function as its second argument. This function
-is then executed on every element in the first argument. This is very similar to
-a for loop: first, `cc` stores the first continent name, "Asia", then runs the 
-code in the function body, then `cc` stores the second continent name, and runs
-the function body, and so on. The code in the function body can be thought of in 
-exactly the same way as the body of the `for` loop. The result of the last line
-is then returned to `lapply`, which combines the results into a list.
+`lapply` 함수는 벡터(혹은 리스트)를 첫번째 인자(이번 경우에는 대륙명 벡터)로 받고, 두번째 인자로 함수를 받는다.
+`lapply` 함수는 첫번째 인자에 들어있는 모든 요소에 대해 연산작업을 수행한다. 이런 점은 `for` 루프와 매우 유사하다: 먼저 `cc` 변수에 첫번째 대륙명 "Asia"를 저장하고 나서, 함수 몸통에 있는 코드를 실행한다. 그리고 나서 `cc` 변수에 두번째 대륙명을 저장하고 함수몸통을 실행한다. 이를 모든 요소에 반복한다. 함수 몸통에 담긴 코드는 정확하게 `for` 루프와 동일하게 간주해도 좋다. 마지막 행 결과가 `lapply` 함수에 반환되는데, 이때 반환되는 결과는 리스트로 결합된다.
 
-`sapply` is identical to `lapply`, except that it tries to simplify the results
-object. If we run the same code with `sapply` instead of `lapply` the results 
-will be returned as a vector:
+`sapply` 함수는 `lapply` 함수와 동일한데, 차이점은 결과객체를 단순화함에 있다. `lapply` 함수 대신에 `sapply` 함수로 동일한 코드를 실행하면, 벡터로 결과가 반환된다:
 
 
 ~~~{.r}
@@ -100,8 +87,9 @@ results
 
 ### apply
 
-The `apply` function is useful for matrix data: it allows you loop over either
-the rows or columns of a matrix.
+`apply` 함수는 행렬 데이터에 유용하다:
+행렬 행 혹은 열 방향으로 루프를 돌릴 수 있게 해 준다.
+
 
 
 ~~~{.r}
@@ -113,7 +101,7 @@ rownames(r) <- LETTERS[1:10]
 
 
 ~~~{.r}
-# Get the maximum value in each row:
+# 각 행에 대한 최대값을 구한다:
 apply(r, 1, max)
 ~~~
 
@@ -121,16 +109,16 @@ apply(r, 1, max)
 
 ~~~{.output}
         A         B         C         D         E         F         G 
-1.9026721 0.8409824 1.2589881 2.3216163 0.9566330 1.3741352 1.8549427 
+0.8277022 0.6944034 0.6756426 0.3526278 1.7156767 1.5048335 0.9890347 
         H         I         J 
-1.1066072 1.0799746 0.8618778 
+2.5284065 0.9590524 0.7587253 
 
 ~~~
 
 
 
 ~~~{.r}
-# and for each column:
+# 각 칼럼에 대한 최대값을 구한다:
 apply(r, 2, max)
 ~~~
 
@@ -138,28 +126,26 @@ apply(r, 2, max)
 
 ~~~{.output}
         a         b         c         d 
-1.7335561 1.9026721 0.8618778 2.3216163 
+0.9590524 1.8348489 2.5284065 0.7587253 
 
 ~~~
 
-> ### means and sums {.callout}
+> ### 평균과 합계 {.callout}
 >
-> R has inbuilt functions for summing or calculating the mean of rows and 
-> columns: `colSums`, `colMeans`, `rowSums`, `rowMeans`. These are faster than
-> writing your own `apply`!
+> R에는 행과 열에 대한 평균 혹은 합계를 계산하는 내장 함수가 들어있다: 
+> columns: `colSums`, `colMeans`, `rowSums`, `rowMeans`. 
+> 자체 `apply` 함수를 작성하는 것보다 이들이 더 빠르다!
 >
 
-> ### the return of apply {.callout}
+> ### `apply` 함수 출력 {.callout}
 >
-> When the function given to `apply` returns a vector instead of a single value
-> the results will always be combined into columns, even if running the 
-> function across the rows!
+>  `apply`에 들어가는 함수가 단일값이 아닌 벡터를 출력할 때,
+> 행에 걸쳐 함수를 실행할 때 조차도 결과는 항상 칼럼으로 결합된다!
 >
 
 ### mapply
 
-The `mapply` function can be used to run a function with different combinations
-of arguments. Let's take a look at an example:
+`mapply` 함수를 사용해서 다른 인수 조합을 갖는 함수를 실행할 수 있다. 예제를 살펴보자:
 
 
 ~~~{.r}
@@ -185,7 +171,7 @@ mapply(rep, a, b)
 
 ~~~
 
-This is the same as running the following code:
+상기 코드를 실행하면 다음과 결과가 같다:
 
 
 ~~~{.r}
@@ -238,7 +224,7 @@ rep(a[4], b[4])
 
 ~~~
 
-or the following `lapply` statement:
+혹은,  다음 `lapply` 문장과 동일하다:
 
 
 ~~~{.r}
@@ -266,9 +252,8 @@ lapply(1:4, function(ii) {
 
 ### tapply
 
-The `tapply` function allows you to run a function on different groups within
-a vector. Going back to our first example of the lesson, we can use `tapply` to
-calculate the total population for each continent in 2007:
+`tapply` 함수는 벡터 내부 서로 다른 그룹집단에 함수를 실행할 수 있게 해준다. 이번 학습 첫번째 예제로 되돌아 가서, `tapply` 함수를 사용해서 2007년 각 대륙별로 총인구를 계산할 수 있다:
+
 
 
 ~~~{.r}
