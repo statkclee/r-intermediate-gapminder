@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="generator" content="pandoc">
-    <title>Software Carpentry: Intermediate R for reproducible scientific analysis</title>
+    <title>Software Carpentry: 재현가능한 과학적 분석을 위한 중급 R</title>
     <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="css/bootstrap/bootstrap.css" />
@@ -26,28 +26,28 @@
       <article>
       <div class="row">
         <div class="col-md-10 col-md-offset-1">
-                    <a href="index.html"><h1 class="title">Intermediate R for reproducible scientific analysis</h1></a>
-          <h2 class="subtitle">Apply functions</h2>
+                    <a href="index.html"><h1 class="title">재현가능한 과학적 분석을 위한 중급 R</h1></a>
+          <h2 class="subtitle">Apply 함수</h2>
           <section class="objectives panel panel-warning">
 <div class="panel-heading">
-<h2 id="learning-objectives"><span class="glyphicon glyphicon-certificate"></span>Learning objectives</h2>
+<h2 id="학습-목표"><span class="glyphicon glyphicon-certificate"></span>학습 목표</h2>
 </div>
 <div class="panel-body">
 <ul>
-<li>To learn how to use <em>apply</em> to automate tasks efficiently</li>
-<li>To know the difference between <code>apply</code>, <code>lapply</code>, <code>sapply</code>, <code>tapply</code> and <code>mapply</code>.</li>
+<li><em>apply</em> 함수를 사용해서 작업을 효율적으로 자동화하는 방법을 학습한다.</li>
+<li><code>apply</code>, <code>lapply</code>, <code>sapply</code>, <code>tapply</code>, <code>mapply</code> 함수간 차이를 이해한다.</li>
 </ul>
 </div>
 </section>
-<h3 id="vectorized-task-automation">Vectorized task automation</h3>
-<p>Previously we introduced you to <code>for</code> loops: a basic programming construct that is common across many programming languages. R has more optimised way of automating tasks that are not only faster than for loops, but also take away the pain of having to pre-define your results object.</p>
-<p>The most common function you will encounter is <code>lapply</code>, and the closely related <code>sapply</code>.</p>
-<p>Lets take a look at the following <code>for</code> loop:</p>
+<h3 id="벡터화-작업-자동화">벡터화 작업 자동화</h3>
+<p>앞서 <code>for</code> 루프를 소개했다: 많은 프로그래밍 언어에서 공통된 기본 프로그래밍 구성체(construct). R에는 작업을 자동화하는 더 최적화된 방식이 있는데 <code>for</code> 루프보다 속도가 더 빠를 뿐만 아니라, 결과 객체를 사전에 정의해야되는 고통도 함께 가져가 버렸다.</p>
+<p>접하게 되는 가장 흔한 함수가 <code>lapply</code>가 되는데, 이 함수는 <code>sapply</code>와 매우 밀접하게 연관되어 있다.</p>
+<p>다음 <code>for</code> 루프를 살펴보자:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">for (cc in gap[,<span class="kw">unique</span>(continent)]) {
   popsum &lt;-<span class="st"> </span>gap[year ==<span class="st"> </span><span class="dv">2007</span> &amp;<span class="st"> </span>continent ==<span class="st"> </span>cc, <span class="kw">sum</span>(pop)]
   <span class="kw">print</span>(<span class="kw">paste</span>(cc, <span class="st">&quot;:&quot;</span>, popsum))
 }</code></pre></div>
-<p>It calculates the total population on each continent, then prints out the result. If instead we want to save these results, we can either make a vector in advance and save the results, or use one of the <code>apply</code> to take care of this detail for us:</p>
+<p>상기 함수는 각 대륙별로 전체 인구를 계산하고 나서 결과를 출력한다. 바로 출력하는 대신에 결과를 저장하려면, 사전에 벡터를 미리 생성하고 나서 결과를 저장하거나, <code>apply</code> 계열 함수 하나를 선택하면 세부적인 사항은 알아서 자동 수행한다:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results &lt;-<span class="st"> </span><span class="kw">lapply</span>(gap[,<span class="kw">unique</span>(continent)], function(cc) {
   popsum &lt;-<span class="st"> </span>gap[year ==<span class="st"> </span><span class="dv">2007</span> &amp;<span class="st"> </span>continent ==<span class="st"> </span>cc, <span class="kw">sum</span>(pop)]
   popsum
@@ -69,8 +69,8 @@ $Americas
 $Oceania
 [1] 24549947
 </code></pre>
-<p><code>lapply</code> takes a vector (or list) as its first argument (in this case a vector of the continent names), then a function as its second argument. This function is then executed on every element in the first argument. This is very similar to a for loop: first, <code>cc</code> stores the first continent name, “Asia”, then runs the code in the function body, then <code>cc</code> stores the second continent name, and runs the function body, and so on. The code in the function body can be thought of in exactly the same way as the body of the <code>for</code> loop. The result of the last line is then returned to <code>lapply</code>, which combines the results into a list.</p>
-<p><code>sapply</code> is identical to <code>lapply</code>, except that it tries to simplify the results object. If we run the same code with <code>sapply</code> instead of <code>lapply</code> the results will be returned as a vector:</p>
+<p><code>lapply</code> 함수는 벡터(혹은 리스트)를 첫번째 인자(이번 경우에는 대륙명 벡터)로 받고, 두번째 인자로 함수를 받는다. <code>lapply</code> 함수는 첫번째 인자에 들어있는 모든 요소에 대해 연산작업을 수행한다. 이런 점은 <code>for</code> 루프와 매우 유사하다: 먼저 <code>cc</code> 변수에 첫번째 대륙명 “Asia”를 저장하고 나서, 함수 몸통에 있는 코드를 실행한다. 그리고 나서 <code>cc</code> 변수에 두번째 대륙명을 저장하고 함수몸통을 실행한다. 이를 모든 요소에 반복한다. 함수 몸통에 담긴 코드는 정확하게 <code>for</code> 루프와 동일하게 간주해도 좋다. 마지막 행 결과가 <code>lapply</code> 함수에 반환되는데, 이때 반환되는 결과는 리스트로 결합된다.</p>
+<p><code>sapply</code> 함수는 <code>lapply</code> 함수와 동일한데, 차이점은 결과객체를 단순화함에 있다. <code>lapply</code> 함수 대신에 <code>sapply</code> 함수로 동일한 코드를 실행하면, 벡터로 결과가 반환된다:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results &lt;-<span class="st"> </span><span class="kw">sapply</span>(gap[,<span class="kw">unique</span>(continent)], function(cc) {
   popsum &lt;-<span class="st"> </span>gap[year ==<span class="st"> </span><span class="dv">2007</span> &amp;<span class="st"> </span>continent ==<span class="st"> </span>cc, <span class="kw">sum</span>(pop)]
   popsum
@@ -81,41 +81,41 @@ results</code></pre></div>
 3811953827  586098529  929539692  898871184   24549947 
 </code></pre>
 <h3 id="apply">apply</h3>
-<p>The <code>apply</code> function is useful for matrix data: it allows you loop over either the rows or columns of a matrix.</p>
+<p><code>apply</code> 함수는 행렬 데이터에 유용하다: 행렬 행 혹은 열 방향으로 루프를 돌릴 수 있게 해 준다.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># create some dummy data</span>
 r &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="kw">rnorm</span>(<span class="dv">10</span>*<span class="dv">4</span>), <span class="dt">nrow=</span><span class="dv">10</span>)
 <span class="kw">colnames</span>(r) &lt;-<span class="st"> </span>letters[<span class="dv">1</span>:<span class="dv">4</span>]
 <span class="kw">rownames</span>(r) &lt;-<span class="st"> </span>LETTERS[<span class="dv">1</span>:<span class="dv">10</span>]</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Get the maximum value in each row:</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 각 행에 대한 최대값을 구한다:</span>
 <span class="kw">apply</span>(r, <span class="dv">1</span>, max)</code></pre></div>
-<pre class="output"><code>        A         B         C         D         E         F         G 
-0.9621735 1.1248378 0.9209498 1.4553950 0.8625534 0.9564831 0.4842614 
-        H         I         J 
-0.9176132 1.0213789 0.8276343 
+<pre class="output"><code>         A          B          C          D          E          F 
+ 1.7186295  1.5747280  0.9143232  0.8146741  2.0507913  0.4780862 
+         G          H          I          J 
+-0.1877886  0.2429086  0.2726646  0.5065971 
 </code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># and for each column:</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 각 칼럼에 대한 최대값을 구한다:</span>
 <span class="kw">apply</span>(r, <span class="dv">2</span>, max)</code></pre></div>
-<pre class="output"><code>        a         b         c         d 
-1.0213789 1.4553950 1.1248378 0.9209498 
+<pre class="output"><code>       a        b        c        d 
+2.050791 1.624339 1.718630 1.894572 
 </code></pre>
 <aside class="callout panel panel-info">
 <div class="panel-heading">
-<h3 id="means-and-sums"><span class="glyphicon glyphicon-pushpin"></span>means and sums</h3>
+<h3 id="평균과-합계"><span class="glyphicon glyphicon-pushpin"></span>평균과 합계</h3>
 </div>
 <div class="panel-body">
-<p>R has inbuilt functions for summing or calculating the mean of rows and columns: <code>colSums</code>, <code>colMeans</code>, <code>rowSums</code>, <code>rowMeans</code>. These are faster than writing your own <code>apply</code>!</p>
+<p>R에는 행과 열에 대한 평균 혹은 합계를 계산하는 내장 함수가 들어있다: columns: <code>colSums</code>, <code>colMeans</code>, <code>rowSums</code>, <code>rowMeans</code>. 자체 <code>apply</code> 함수를 작성하는 것보다 이들이 더 빠르다!</p>
 </div>
 </aside>
 <aside class="callout panel panel-info">
 <div class="panel-heading">
-<h3 id="the-return-of-apply"><span class="glyphicon glyphicon-pushpin"></span>the return of apply</h3>
+<h3 id="apply-함수-출력"><span class="glyphicon glyphicon-pushpin"></span><code>apply</code> 함수 출력</h3>
 </div>
 <div class="panel-body">
-<p>When the function given to <code>apply</code> returns a vector instead of a single value the results will always be combined into columns, even if running the function across the rows!</p>
+<p><code>apply</code>에 들어가는 함수가 단일값이 아닌 벡터를 출력할 때, 행에 걸쳐 함수를 실행할 때 조차도 결과는 항상 칼럼으로 결합된다!</p>
 </div>
 </aside>
 <h3 id="mapply">mapply</h3>
-<p>The <code>mapply</code> function can be used to run a function with different combinations of arguments. Let’s take a look at an example:</p>
+<p><code>mapply</code> 함수를 사용해서 다른 인수 조합을 갖는 함수를 실행할 수 있다. 예제를 살펴보자:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">a &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">4</span>
 b &lt;-<span class="st"> </span><span class="dv">4</span>:<span class="dv">1</span>
 <span class="kw">mapply</span>(rep, a, b)</code></pre></div>
@@ -131,7 +131,7 @@ b &lt;-<span class="st"> </span><span class="dv">4</span>:<span class="dv">1</sp
 [[4]]
 [1] 4
 </code></pre>
-<p>This is the same as running the following code:</p>
+<p>상기 코드를 실행하면 다음과 결과가 같다:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rep</span>(a[<span class="dv">1</span>], b[<span class="dv">1</span>])</code></pre></div>
 <pre class="output"><code>[1] 1 1 1 1
 </code></pre>
@@ -144,7 +144,7 @@ b &lt;-<span class="st"> </span><span class="dv">4</span>:<span class="dv">1</sp
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rep</span>(a[<span class="dv">4</span>], b[<span class="dv">4</span>])</code></pre></div>
 <pre class="output"><code>[1] 4
 </code></pre>
-<p>or the following <code>lapply</code> statement:</p>
+<p>혹은, 다음 <code>lapply</code> 문장과 동일하다:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">lapply</span>(<span class="dv">1</span>:<span class="dv">4</span>, function(ii) {
   <span class="kw">rep</span>(a[ii], b[ii])
 })</code></pre></div>
@@ -161,7 +161,7 @@ b &lt;-<span class="st"> </span><span class="dv">4</span>:<span class="dv">1</sp
 [1] 4
 </code></pre>
 <h3 id="tapply">tapply</h3>
-<p>The <code>tapply</code> function allows you to run a function on different groups within a vector. Going back to our first example of the lesson, we can use <code>tapply</code> to calculate the total population for each continent in 2007:</p>
+<p><code>tapply</code> 함수는 벡터 내부 서로 다른 그룹집단에 함수를 실행할 수 있게 해준다. 이번 학습 첫번째 예제로 되돌아 가서, <code>tapply</code> 함수를 사용해서 2007년 각 대륙별로 총인구를 계산할 수 있다:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gap2007 &lt;-<span class="st"> </span>gap[year ==<span class="st"> </span><span class="dv">2007</span>] <span class="co"># first filter by the year</span>
 <span class="kw">tapply</span>(
   gap2007[,pop], <span class="co"># The column of population counts from the data frame</span>
