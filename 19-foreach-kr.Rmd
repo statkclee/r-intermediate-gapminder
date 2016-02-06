@@ -1,0 +1,179 @@
+---
+layout: page
+title: 재현가능한 과학적 분석을 위한 중급 R 
+subtitle: 병렬 프로그래밍
+minutes: 20
+---
+
+```{r, echo=FALSE}
+library("data.table")
+gap <- fread("data/gapminder-FiveYearData.csv")
+```
+
+> ## 학습 목표 {.objectives}
+>
+> * "당혹스럽게도 병렬(embarrasingly parallel)" [^1] 문제 개념을 이해한다.
+> * R에서 병렬처리 작업을 위한 병렬처리 백엔드를 구축한다.
+> * 루프 작업으로 `foreach` 팩키지를 사용해서 효과적으로 병렬화한다.
+> * R에서 실행되는 코드 전체 실행시간을 평가할 수 있다.
+>
+
+[^1]: [Embarrassingly parallel](https://en.wikipedia.org/wiki/Embarrassingly_parallel)
+
+과학 연구에서 마주치는 일부 문제는 "당혹스럽게도 병렬(embarrasingly parallel)"로 알려진 범주에 속한다:
+엄청난 연산량이 필요하지만, 연산작업이 상호 의존성이 없는 경우.
+유전학에 이에 대한 고전적인 예제가 있다: 전장유전체연관(Genome-wide association) 연구는 
+특정 질병 혹은 특질과 연관성에 대해서 게놈별로 수십만개 유전변형체를 검정하는 것과 연관되어 있다.
+각 유전 변형체는 독립적으로 테스트될 수 있다. 즉, 연관성에 대한 계산에 다른 어떤 테스트 결과가 필요한 것은 아니다.
+
+이번 학습에서 본인 컴퓨터에서 다수 코어에 이런 유형의 작업을 병렬처리하는 방식과 함정에 빠지는 것을 회피하는 
+방식을 학습한다.
+
+### 병렬처리 백엔드 등록하기
+
+먼저, 병렬처리 연산작업에 얼마나 많은 코어를 사용할지 R에게 전달할 필요가 있다.
+이번 학습에서, 본인 컴퓨터에 장착된 전체 코어 숫자보다 1개 적은 코어를 사용하도록 R에게 전달한다:
+백그라운드에서 연산작업이 진행되는 동안, 다른 작업을 위해 코어를 하나 남겨둔다:
+
+```{r}
+library(doParallel)
+cl <- makeCluster(2)
+registerDoParallel(cl)
+```
+
+> #### 코어가 얼마나 있을까? {.callout}
+>
+> 실무에서, 컴퓨터에 장착된 더 많은 코어를 절대로 등록하지 마라.
+> 그렇지 않는 경우, 병렬처리 연산으로 인해 컴퓨터가 상당히 좋지 못한 상황에 놓이게 된다:
+> 서서히 가다가 멈추거나 극단적으로 느려진다. 병렬처리연산 조차도 극단적으로 느려질 수 있어서,
+> 좋은 점이 없다는 것에 주의한다.
+>
+> `detectCores` 함수를 통해 얼마나 많은 코어를 안전하게 병렬처리 작업에 
+> 활용할 수 있는지 확인할 수 있다:
+>
+> ```{r}
+> library(parallel)
+> detectCores()
+> ```
+>
+
+### 병렬 `for` 루프
+
+병렬 `for` 루프에 몇가지 구성요소가 있다.
+예제를 통해 학습을 진행해보자:
+
+```{r}
+# 병렬 for 루프 라이브러리를 불러와서 적재한다.
+library(foreach)
+# 국가 목록을 가져온다.
+countries <- unique(gap$country)
+# 지난 55년간 각 국가별로 기대수명 변화를 계산한다.
+diffLifeExp <- foreach(cc = countries, .combine=rbind, .packages="data.table") %dopar% {
+  diffLE <- gap[country == cc, max(lifeExp) - min(lifeExp)]
+  data.table(
+    country=cc,
+    diffLifeExp=diffLE
+  )
+}
+diffLifeExp
+```
+
+`for` 루프 대신에 `foreach` 함수를 사용한다.
+`foreach()` 함수 다음에 위치한 `%dopar%` 연산자가
+다수 코어에 독립적으로 `foreach` 연산(즉, `foreach` 루프 몸통부문)을 실행하도록 지시한다.
+
+코어를 4개이상 병렬처리로 지정하면, 첫 네 국가에 대한 연산작업은 병렬로 실행된다:
+기대수명 변화를 동시에 Afghanistan, Albania, Algeria, Angola 에 대해 연산하고,
+처리결과가 반환되고 나서, 다음 네 국가가 계산되고, 쭉 계속 진행된다.
+
+`apply` 계열 함수처럼, `foreach` 루프 몸통부문 마지막줄 결과가 반환되고 조합된다.
+기본디폴트 설정은 `lapply`함수처럼 `list`로 결과를 조합하게 되어 있다.
+하지만, 결과를 조합하는데 `.combine` 인자를 사용해서 다른 함수를 명세할 수도 있다.
+`foreach` 함수에 `rbind` 함수를 사용하도록 저정해서,
+연산결과 각각을 신규 `data.table`에 행으로 추가한다.
+
+마지막으로 `.packages` 인자를 사용해서 `foreach` 루프 몸통부문 계산에 필요한 팩키지를 전달한다.
+병렬처리연산은 독립된 각 R 세션별로 진행되서, 각 R 세션별로 연산작업을 실행할 때 필요한 팩키지를 전달한다.
+
+### 효율적인 병렬화와 의사소통 추가비용
+
+병렬화는 공짜가 아니다: 각 병렬코어로 객체를 전달받고 객체를 전송함에 있어 의사소통 추가비용이 발생한다.
+
+다음 예제에서, 년도별로 전세계 평균 수명을 계산하고, `system.time` 함수를 사용해서
+코드 전체실행 시간을 조사한다.
+
+```{r}
+years <- unique(gap$year)
+runtime1 <- system.time({
+  meanLifeExp <- foreach(
+    yy = years, 
+    .packages="data.table"
+   ) %dopar% {
+    mean(gap[year == yy, lifeExp])
+  }
+})
+runtime1
+```
+
+`system.time` 함수는 R 코드(`{`, `}` 괄호로 둘러쌈)를 받아, 
+실행하고, 해당 코드가 실행되는데 소요된 총시간을 반환한다.
+이번 경우에, "elapsed" 경과 필드에 관심을 둔다: 컴퓨터가 코드를 실행하는데
+소요된 "실제" 시간정보를 제공한다.
+"user"와 "system" 필드는 다양한 운영시스템 수준별로 소요된 CPU 시간 정보를 제공한다.
+자세한 사항은 `help("proc.time")` 도움말을 참조한다.
+
+상기 방식은 실제로 코드를 병렬처리하는 매우 비효율적인 예제다.
+`year`가 다른 `r length(years)` 년도가 있기 때문에,
+`r years[1]`년, `r years[2]`년 연산작업을 코어 두개에 전송하고 결과를 취합하고,
+`r years[3]`년, `r years[4]`년 연산작업을 코어 두개에 전송하고 결과를 취합하고, 쭉 계속 이어나간다.
+
+문제를 "덩어리"로 쪼개는 것이 훨씬 더 효과적이다:
+각 병렬코어별.
+해당 문제를 해결하는데 `itertools` 팩키지가 `foreach` 함수와 통합된 유용한 함수를 제공한다.
+`isplitVector`를 사용해서 `years` 연도를 두 덩어리로 쪼개고 나서 
+각 병렬코어별로 병렬화되지 않는(순차적인) `foreach` 루프를 사용해서 각 연도별로 연산작업을 수행한다.
+각 병렬코어에 `foreach` 팩키지에 관한 정보를 전달함에 주의힌다.
+`getDoParWorkers` 함수를 사용해서 자동으로 등록된 코어 갯수가 몇개인지 탐지하도록 한다.
+나중에 코드전반에 걸쳐 코어갯수 정보를 갱신할 필요없이 코어갯수를 달리 적용할 수 있음을 의미한다:
+
+```{r}
+library(itertools)
+runtime2 <- system.time({
+  meanLifeExp <- foreach(
+      chunk = isplitVector(years, chunks=getDoParWorkers()), 
+      .packages=c("foreach", "data.table")
+  ) %dopar% {
+    foreach(yy = chunk, .combine=rbind) %do% {
+      mean(gap[year == yy, lifeExp])
+    }
+  }
+})
+runtime2
+```
+
+`r if(runtime2["elapsed"] > runtime1["elapsed"]) 
+{ "놀랍게도, 코드가 훨씬 더 느리다!" } else { "놀랍게도, 주목할 만한 속도향상은 없다!"}` 
+그럼 무슨 일이 일어난 걸까?
+이번 경우에, 병렬코드를 효율적으로 설정하는 간접비용이 효익을 넘어선다.
+장난감 데이터셋으로 작업하기 때문에, 실제 연산작업은 매우 매우 빠르다.
+첫번째 예제와 비교해서, R 신규 세션별로 적재되는 `foreach` 팩키지를 추가했을 뿐만 아니라,
+`isplitVector`로 작업을 덩어리로 쪼갰다. 모두 합쳐서 
+이런 간접 설정시간이 실제 연산시간보다 더 많이 소요됐다!
+
+예를 들어, `sapply` 함수를 사용해서 코드를 별렬로 실행하지 않았는데, 
+전체 소요 시간이 가장 빠른 것을 볼 수 있다:
+
+```{r}
+runtime3 <- system.time({
+  meanLifeExp <- sapply(years, function(yy) {
+    mean(gap[year == yy, lifeExp])
+  })
+})
+runtime3
+```
+
+마지막으로, 코드를 병렬화할 때 중요하게 고려해야 되는 사항은 
+얼마나 많은 코어갯수가 해당 작업에 가장 효과적인지 판단해야 된다.
+너무 코어 갯수가 많은 경우, 덩어리가 작아져서 의사소통 비용과 초기 설정 시간을 상쇄하기
+힘든 경우가 발생할 수 있다.
+
