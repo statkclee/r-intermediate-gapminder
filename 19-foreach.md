@@ -41,7 +41,13 @@ library(doParallel)
 
 ```
 ## Loading required package: foreach
+```
+
+```
 ## Loading required package: iterators
+```
+
+```
 ## Loading required package: parallel
 ```
 
@@ -155,7 +161,7 @@ runtime1
 
 ```
 ##    user  system elapsed 
-##   0.010   0.001   0.023
+##   0.006   0.001   0.013
 ```
 
 The `system.time` function takes an some R code (wrapped in curly braces, `{`, 
@@ -183,6 +189,13 @@ values throughout your code:
 
 ```r
 library(itertools)
+```
+
+```
+## Error in library(itertools): there is no package called 'itertools'
+```
+
+```r
 runtime2 <- system.time({
   meanLifeExp <- foreach(
       chunk = isplitVector(years, chunks=getDoParWorkers()), 
@@ -193,42 +206,23 @@ runtime2 <- system.time({
     }
   }
 })
+```
+
+```
+## Error in eval(expr, envir, enclos): 함수 "isplitVector"를 찾을 수 없습니다
+```
+
+```
+## Timing stopped at: 0 0 0
+```
+
+```r
 runtime2
 ```
 
 ```
-##    user  system elapsed 
-##   0.007   0.000   0.054
+## Error in eval(expr, envir, enclos): 객체 'runtime2'를 찾을 수 없습니다
 ```
 
-Suprisingly this code was much slower! 
-So what happened? In this case the overhead of setting up the parallel code 
-efficiently outweighed the benefits. Since we're working with a toy dataset, the
-actual calculations are very, very, fast. In comparison to our first example,
-we've now added the `foreach` package, which gets loaded in each new R session,
-as well as the chunking of tasks through `isplitVector`. Together, these take
-longer than the actual calculations!
 
-For example we run the code not in parallel using `sapply` we see the fastest 
-overall time:
-
-
-```r
-runtime3 <- system.time({
-  meanLifeExp <- sapply(years, function(yy) {
-    mean(gap[year == yy, lifeExp])
-  })
-})
-runtime3
-```
-
-```
-##    user  system elapsed 
-##   0.012   0.000   0.013
-```
-
-Finally, an important consideration when parallelising code is deciding how many 
-cores is the most effective for the task at hand. With too many cores the chunks
-can become small enough that the communication and setup overhead outweighs the 
-benefit.
 

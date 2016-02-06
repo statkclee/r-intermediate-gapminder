@@ -161,7 +161,7 @@ runtime2 <- system.time({
 runtime2
 ```
 
-`r if(runtime2["elapsed"] > runtime1["elapsed"]) { "Suprisingly this code was much slower!" } else { "Surprisingly, there was no appreciable speed up!"}` 
+`r if(runtime2["elapsed"] > runtime1["elapsed"]) { "Suprisingly this code was much slower!" } else { "Surprisingly, there was no appreciable speed up!"}`  
 So what happened? In this case the overhead of setting up the parallel code 
 efficiently outweighed the benefits. Since we're working with a toy dataset, the
 actual calculations are very, very, fast. In comparison to our first example,
